@@ -36,7 +36,7 @@ polya_volcano <- ggplot2::ggplot(calculate_statistics_out,
   ggplot2::geom_point() +
   ggplot2::geom_vline(xintercept = 0, linetype = "dotted", size = .5, col = "red") +
   ggplot2::geom_hline(yintercept = 1.30103, linetype = "dotted", size = 0.5, col = "red") +
-  xlab(expression("log2FoldChange")) + ylab("-log10(padj)") +
+  ggplot2::xlab(expression("log2FoldChange")) + ggplot2::ylab("-log10(padj)") +
   ggplot2::theme(
     plot.title = ggplot2::element_blank(),
     axis.title.x = ggplot2::element_text(size = 20),

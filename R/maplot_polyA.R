@@ -38,7 +38,7 @@ maplot_polyA <- function(calculate_statistics_out=calculate_statistics_out){
                                                  alpha = PolyA_tail_length)) +
     ggplot2::geom_point() +
     ggplot2::geom_hline(yintercept=0,linetype="dotted", size=0.5,col="red") +
-    xlab(expression("mean(polyA tail length)")) + ylab("log2FoldChange") +
+    ggplot2::xlab(expression("mean(polyA tail length)")) + ggplot2::ylab("log2FoldChange") +
     ggplot2::theme(
       plot.title = ggplot2::element_blank(),
       axis.title.x = ggplot2::element_text(size = 20),

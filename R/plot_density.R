@@ -20,14 +20,14 @@ plot_density <- function(polyA_table=get_gene_id_out,stats="median"){
     stop("The polyA_table must contain the columns 'polyA_length' and 'group'.")
   }
   
-max_density <- quantile(polyA_table$polyA_length, probs = c(0.99))[1]
+max_density <- stats::quantile(polyA_table$polyA_length, probs = c(0.99))[1]
 
-density_plot <- ggplot(polyA_table, aes(x = polyA_length, y=..ndensity.., color = group)) +
-                geom_density() +
-                stat_density(geom = "line", position = "identity", size = 1) +
-                labs(title = "Density plot of polyA lengths", x = "PolyA length", y = "Density (normalized)") +
-                theme_bw() + 
-                coord_cartesian(xlim = c(0, max_density)) 
+density_plot <- ggplot2::ggplot(polyA_table, aes(x = polyA_length, y=..ndensity.., color = group)) +
+                ggplot2::geom_density() +
+                ggplot2::stat_density(geom = "line", position = "identity", size = 1) +
+                ggplot2::labs(title = "Density plot of polyA lengths", x = "PolyA length", y = "Density (normalized)") +
+                ggplot2::theme_bw() + 
+                ggplot2::coord_cartesian(xlim = c(0, max_density)) 
 
 if (stats=="median") {
   
