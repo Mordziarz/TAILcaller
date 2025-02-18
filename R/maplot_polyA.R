@@ -45,7 +45,7 @@ maplot_polyA <- function(calculate_statistics_out=calculate_statistics_out){
       axis.title.y = ggplot2::element_text(size = 20, angle = 90),
       axis.text.y = ggplot2::element_text(size = 20),
       axis.text.x = ggplot2::element_text(size = 20)) +
-    ggplot2::theme(legend.position = "right", plot.title = element_text(hjust = 0.5, size = 27),
+    ggplot2::theme(legend.position = "right", plot.title = ggplot2::element_text(hjust = 0.5, size = 27),
                    legend.text = ggplot2::element_text(size = 10),
                    legend.title = ggplot2::element_text(size = 12),
                    legend.text.align = 0,
