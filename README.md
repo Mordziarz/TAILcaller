@@ -59,7 +59,7 @@ TAILcaller::get_polyA(samples_table = samples_table)
 The get_gene_id function links transcripts to genes, which is useful for performing significance analysis at the transcript or gene level.
 
 ```r
-TAILcaller::get_gene_id(get_polyA=get_polyA_out,transcript_column_gtf = "transcript_id")
+TAILcaller::get_gene_id(polyA_table=tabela,transcript_column_gtf = "transcript_id",gtf_file = gtf)
 ```
 
 # Calculation of basic statistics and counting molecules with polyA tails
