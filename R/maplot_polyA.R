@@ -50,7 +50,7 @@ maplot_polyA <- function(calculate_statistics_out=calculate_statistics_out){
                    legend.title = ggplot2::element_text(size = 12),
                    legend.text.align = 0,
                    legend.title.align = 0,
-                   axis.title = ggplot2::element_text(size = rel(4.0))) +
+                   axis.title = ggplot2::element_text(size = ggplot2::rel(4.0))) +
     ggplot2::scale_color_manual(values = c("Collapsed" = "green2", "Expansion" = "red2", "No significant" = "grey35"),
                                 name = "PolyA tail length") +  
     ggplot2::scale_fill_manual(values = c("Collapsed" = "green4", "Expansion" = "red4", "No significant" = "grey50"),
