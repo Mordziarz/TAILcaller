@@ -11,6 +11,8 @@ volcano_polyA <- function(calculate_statistics_out=calculate_statistics_out){
     stop("'calculate_statistics_out' must be defined.")
   }
 
+  '%!in%' <- function(x,y)!('%in%'(x,y))
+
   calculate_statistics_out$padj <- base::as.numeric(calculate_statistics_out$padj)
   calculate_statistics_out <- calculate_statistics_out[calculate_statistics_out$padj %!in% NA,]
   

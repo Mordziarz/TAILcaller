@@ -24,6 +24,7 @@ library(dplyr)
 library(stats)
 library(tidyr)
 library(rlang)
+library(ggplot2)
 ```
 
 # set.seed() for reproducible results
@@ -58,6 +59,17 @@ TAILcaller::get_polyA(samples_table = samples_table)
 
 The get_gene_id function links transcripts to genes, which is useful for performing significance analysis at the transcript or gene level.
 
+Please ensure the uniqueness of the transcript_id names to avoid duplicating results, and make sure to retain two columns: one with gene_id and the other with transcript_id.
+
+```r
+library(rtracklayer)
+
+gtf <- import.gff("path/to/gtf/file")
+gtf <- as.data.frame(gtf)
+gtf <- gtf[!duplicated(gtf$transcript_id),]
+gtf <- gtf[,c("gene_id","transcript_id")]
+```
+
 ```r
 TAILcaller::get_gene_id(polyA_table=tabela,transcript_column_gtf = "transcript_id",gtf_file = gtf)
 ```
@@ -85,6 +97,8 @@ TAILcaller allows the user to create a volcano plot.
 TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out)
 ```
 
+![Volcano](plots/volcano.png)
+
 # MAplot
 
 TAILcaller allows the user to create a MA plot.
@@ -92,6 +106,9 @@ TAILcaller allows the user to create a MA plot.
 ```r
 TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out)
 ```
+
+![MAplot](plots/maplot.png)
+
 # Density plot 
 
 TAILcaller allows the user to create a density plot. The user can choose whether to display the median (stats = "median") or the mean (stats = "mean").
@@ -99,3 +116,5 @@ TAILcaller allows the user to create a density plot. The user can choose whether
 ```r
 TAILcaller::plot_density(polyA_table = get_gene_id_out,stats = "median")
 ```
+
+![Density](plots/density.png)
