@@ -125,7 +125,7 @@ The user can create a matrix based on the table from the count_molecules functio
 If the user wants to count values for transcripts (which_level="transcript_id"), they should specify this. If counting for genes, they should use which_level="gene_id".
 
 ```r
-TAILcaller::count_molecules(polyA_table = get_gene_id_out,grouping_factor="sample_name",which_level="gene_id")
+count_molecules_out <- TAILcaller::count_molecules(polyA_table = get_gene_id_out,grouping_factor="sample_name",which_level="gene_id")
 
-TAILcaller::get_matrix(count_molecules_out = counts,grouping_factor = "sample_name",which_level = "gene_id",statistic = "median_polyA_length")
+TAILcaller::get_matrix(count_molecules_out = count_molecules_out,grouping_factor = "sample_name",which_level = "gene_id",statistic = "median_polyA_length")
 ```
