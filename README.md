@@ -8,7 +8,7 @@ R package for analyzing polyA tails after dorado basecalling.
 install.packages("devtools")
 library(devtools)
 devtools::install_github('Mordziarz/TAILcaller')
-library(RSCUcaller)
+library(TAILcaller)
 ```
 To use all features of the program, you will need several libraries.
 
