@@ -22,7 +22,7 @@ plot_density <- function(polyA_table=get_gene_id_out,stats="median"){
   
 max_density <- stats::quantile(polyA_table$polyA_length, probs = c(0.99))[1]
 
-density_plot <- ggplot2::ggplot(polyA_table, aes(x = polyA_length, y=..ndensity.., color = group)) +
+density_plot <- ggplot2::ggplot(polyA_table, ggplot2::aes(x = polyA_length, y=..ndensity.., color = group)) +
                 ggplot2::geom_density() +
                 ggplot2::stat_density(geom = "line", position = "identity", size = 1) +
                 ggplot2::labs(title = "Density plot of polyA lengths", x = "PolyA length", y = "Density (normalized)") +
