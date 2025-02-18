@@ -26,7 +26,7 @@ density_plot <- ggplot2::ggplot(polyA_table, ggplot2::aes(x = polyA_length, y=..
                 ggplot2::geom_density() +
                 ggplot2::stat_density(geom = "line", position = "identity", size = 1) +
                 ggplot2::labs(title = "Density plot of polyA lengths", x = "PolyA length", y = "Density (normalized)") +
-                ggplot2::theme_bw() + 
+                ggplot2::theme_classic() + 
                 ggplot2::coord_cartesian(xlim = c(0, max_density)) +
                 ggplot2::guides(fill = guide_legend(reverse=TRUE))
 
