@@ -20,7 +20,6 @@ To use all features of the program, you will need several libraries.
 library(Rsamtools)
 library(dplyr)
 library(stats)
-library(dplyr)
 library(tidyr)
 library(rlang)
 ```

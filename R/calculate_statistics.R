@@ -48,7 +48,7 @@ calculate_statistics <- function(polyA_table=get_gene_id_out, grouping_factor="g
       group_ctr_data <- polyA_table_unique$polyA_length[polyA_table_unique$group == control_group]
       group_trt_data <- polyA_table_unique$polyA_length[polyA_table_unique$group == treated_group]
       
-      p_val <- base::suppressWarnings(stats::wilcox.test(base::as.formula(formula), data = polyA_table_unique)$p.value)
+      p_val <- base::suppressWarnings(stats::wilcox.test(stats::as.formula(formula), data = polyA_table_unique)$p.value)
       p_values[i] <- p_val
       
       mean_group_ctr[i] <- base::mean(group_ctr_data, na.rm = TRUE)
