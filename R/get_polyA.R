@@ -1,7 +1,7 @@
 #' Creating a polyA table based on the bams from dorado
 #'
-#' @param samples_table the table was created using the get_RSCU function
-#' @return A table object.
+#' @param samples_table the table with bam description
+#' @return a table object.
 #' @export
 #'
 

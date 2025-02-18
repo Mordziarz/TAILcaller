@@ -1,7 +1,7 @@
 #' Creating a volcano plot
 #'
 #' @param calculate_statistics_out the table was created using the calculate_statistics function
-#' @return A table object.
+#' @return a table object.
 #' @export
 #'
 

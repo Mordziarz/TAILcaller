@@ -1,9 +1,9 @@
 #' Counting molecules, calculating the mean and median for the groups
 #'
-#' @param polyA_table The table created using the get_polyA function.
-#' @param grouping_factor The name of the column in the table that divides the experiment into groups.
-#' @param which_level The name of the column by which the statistics should be grouped, either transcripts or genes.
-#' @return A table object.
+#' @param polyA_table the table created using the get_polyA function.
+#' @param grouping_factor the name of the column in the table that divides the experiment into groups.
+#' @param which_level the name of the column by which the statistics should be grouped, either transcripts or genes.
+#' @return a table object.
 #' @export
 #'
 
