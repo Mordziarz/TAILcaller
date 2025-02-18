@@ -1,6 +1,10 @@
 # TAILcaller
-R package for analyzing polyA tails after dorado basecalling.
 
+R package for analyzing polyA tails after Dorado basecalling. Dorado allows polyA estimation. The command to perform basecalling for TAILcaller to work correctly.
+
+```r
+~/dorado-0.8.1-linux-x64/bin/dorado basecaller sup --reference transcriptome.fasta --estimate-poly-a pod5s/ > CONTROL.bam
+```
 
 # Installation
 
@@ -19,4 +23,78 @@ library(stats)
 library(dplyr)
 library(tidyr)
 library(rlang)
+```
+
+# set.seed() for reproducible results
+
+```r
+set.seed(123)
+```
+
+# Input data and get_polyA() function
+
+The get_polyA() function is the main function of the package, which extracts polyA tail information from a BAM file.
+
+```r
+bamfile1 <- "path/to/bam"
+bamfile2 <- "path/to/bam"
+bamfile3 <- "path/to/bam"
+bamfile4 <- "path/to/bam"
+bamfile5 <- "path/to/bam"
+bamfile6 <- "path/to/bam"
+bamfile7 <- "path/to/bam"
+bamfile8 <- "path/to/bam"
+
+samples_table <- data.frame(bam_path = c(bamfile1,bamfile2,bamfile3,bamfile4,bamfile5,bamfile6,bamfile7,bamfile8),
+                            sample_name = c("condition1.1","condition1.2","condition1.3","condition1.4","condition2.1","condition2.2","condition2.3","condition2.4"),
+                            group = c("condition1","condition1","condition1","condition1","condition2","condition2","condition2","condition2"))
+
+TAILcaller::get_polyA(samples_table = samples_table)
+
+```
+
+# Linking transcripts to genes
+
+The get_gene_id function links transcripts to genes, which is useful for performing significance analysis at the transcript or gene level.
+
+```r
+TAILcaller::get_gene_id(get_polyA=get_polyA_out,transcript_column_gtf = "transcript_id")
+```
+
+# Calculation of basic statistics and counting molecules with polyA tails
+
+The count_molecules function allows counting the number of molecules (at the transcript level, which_level = column with transcripts, or at the gene level, which_level = column with genes) in groups (grouping_factor = "group").
+
+```r
+TAILcaller::count_molecules(polyA_table = get_gene_id_out,grouping_factor="group",which_level="transcript_id")
+```
+
+# Calculation of statistics
+
+The calculate_statistics function performs the Wilcoxon test, p-value adjustment (FDR), Cohen's d test, and log2 fold change calculation. The function requires a table with polyA tail values. It is possible to calculate statistics for genes if you define polyA_table as the output table from the get_gene_id function. The grouping factor is the column that distinguishes the samples. The which_level argument should be assigned to the column containing transcript or gene identifiers. control_group and treated_group are the names of the groups in "" that correspond to those in the grouping_factor column (defined earlier).
+
+```r
+TAILcaller::calculate_statistics(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "CTR",treated_group = "HIGH")
+```
+# Volcano plot
+
+TAILcaller allows the user to create a volcano plot.
+
+```r
+TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out)
+```
+
+# MAplot
+
+TAILcaller allows the user to create a MA plot.
+
+```r
+TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out)
+```
+# Density plot 
+
+TAILcaller allows the user to create a density plot .
+
+```r
+TAILcaller::plot_density(polyA_table = get_gene_id_out,stats = "median")
 ```

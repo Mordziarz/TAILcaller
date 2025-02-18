@@ -1,14 +1,14 @@
-#' Creating a polyA table based on the bams from dorado
+#' Merging a polyA table with gene_id from gtf file
 #'
 #' @param get_polyA_out the table was created using the get_polyA_out function
 #' @param transcript_column_gtf the name of the column that contains the transcript_id
 #' @return A table object.
 #' @export
 #'
-get_gene_id <- function(get_polyA_out=get_polyA_out,transcript_column_gtf="column_name") {
+get_gene_id <- function(polyA_table=get_polyA_out,transcript_column_gtf="column_name") {
   
-  if (!base::is.data.frame(get_polyA_out)) {
-    stop("Argument 'get_polyA_out' must be a data frame.")
+  if (!base::is.data.frame(polyA_table)) {
+    stop("Argument 'polyA_table' must be a data frame.")
   }
   
   if (!base::is.character(transcript_column_gtf) || !(transcript_column_gtf %in% colnames(gtf_df))) {
@@ -19,7 +19,7 @@ get_gene_id <- function(get_polyA_out=get_polyA_out,transcript_column_gtf="colum
   
   start_time <- base::Sys.time()
 
-  get_gene_id_out <- base::merge(get_polyA_out,gtf_df,by.x="transcript_id",by.y=transcript_column_gtf)
+  get_gene_id_out <- base::merge(polyA_table,gtf_df,by.x="transcript_id",by.y=transcript_column_gtf)
   
   end_time <- base::Sys.time()
 
