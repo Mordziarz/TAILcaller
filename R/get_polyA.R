@@ -17,7 +17,7 @@ get_polyA <- function(samples_table=samples_table) {
 
   param <- Rsamtools::ScanBamParam(what = c("qname", "rname"),tag="pt")
 
-  tabela_ogony_bam <- base::data_frame()
+  tabela_ogony_bam <- base::data.frame()
 
   for (i in 1:base::nrow(samples_table)) {
 
