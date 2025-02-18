@@ -2,6 +2,8 @@
 
 R package for analyzing polyA tails after Dorado basecalling. Dorado allows polyA estimation. The command to perform basecalling for TAILcaller to work correctly.
 
+The test_data contains BAM files on which analyses can be performed using the TAILcaller package.
+
 ```r
 ~/dorado-0.8.1-linux-x64/bin/dorado basecaller sup --reference transcriptome.fasta --estimate-poly-a pod5s/ > CONTROL.bam
 ```
@@ -92,7 +94,7 @@ TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out)
 ```
 # Density plot 
 
-TAILcaller allows the user to create a density plot .
+TAILcaller allows the user to create a density plot. The user can choose whether to display the median (stats = "median") or the mean (stats = "mean").
 
 ```r
 TAILcaller::plot_density(polyA_table = get_gene_id_out,stats = "median")

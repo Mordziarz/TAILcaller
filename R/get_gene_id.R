@@ -5,13 +5,13 @@
 #' @return A table object.
 #' @export
 #'
-get_gene_id <- function(polyA_table=get_polyA_out,transcript_column_gtf="column_name") {
+get_gene_id <- function(polyA_table=get_polyA_out,gtf_file=gtf,transcript_column_gtf="column_name") {
   
   if (!base::is.data.frame(polyA_table)) {
     stop("Argument 'polyA_table' must be a data frame.")
   }
   
-  if (!base::is.character(transcript_column_gtf) || !(transcript_column_gtf %in% colnames(gtf_df))) {
+  if (!base::is.character(transcript_column_gtf) || !(transcript_column_gtf %in% colnames(gtf_file))) {
     stop(paste("Argument 'transcript_column_gtf' must be a column name in the gtf data frame. Please check if the column", transcript_column_gtf, "exists."))
   }
   
@@ -19,7 +19,7 @@ get_gene_id <- function(polyA_table=get_polyA_out,transcript_column_gtf="column_
   
   start_time <- base::Sys.time()
 
-  get_gene_id_out <- base::merge(polyA_table,gtf_df,by.x="transcript_id",by.y=transcript_column_gtf)
+  get_gene_id_out <- base::merge(polyA_table,gtf_file,by.x="transcript_id",by.y=transcript_column_gtf)
   
   end_time <- base::Sys.time()
 
