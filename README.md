@@ -88,6 +88,13 @@ The calculate_statistics function performs the Wilcoxon test, p-value adjustment
 ```r
 TAILcaller::calculate_statistics(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "condition1",treated_group = "condition2")
 ```
+
+For n > 2, the calculate_kruskal_polyA() function has been prepared.
+
+```r
+TAILcaller::calculate_kruskal_polyA(polyA_table = tabela1,grouping_factor = "sample_name",which_level = "gene_id")
+```
+
 # Volcano plot
 
 TAILcaller allows the user to create a volcano plot.
