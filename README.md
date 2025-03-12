@@ -2,8 +2,6 @@
 
 R package for analyzing polyA tails after Dorado basecalling. Dorado allows polyA estimation. The command to perform basecalling for TAILcaller to work correctly.
 
-The test_data contains BAM files on which analyses can be performed using the TAILcaller package.
-
 ```r
 ~/dorado-0.8.1-linux-x64/bin/dorado basecaller sup --reference transcriptome.fasta --estimate-poly-a pod5s/ > CONTROL.bam
 ```
