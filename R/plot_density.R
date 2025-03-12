@@ -52,6 +52,9 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
 
 }
 
-return(density_plot)
+formula <- base::paste0("polyA_length ~ ", grouping_column)
+res_stats <- stats::wilcox.test(stats::as.formula(formula), data=polyA_table)
+
+return(list(wilcox_test = res_stats, plot = density_plot))
 
 }
