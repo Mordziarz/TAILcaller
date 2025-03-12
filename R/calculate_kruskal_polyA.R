@@ -13,10 +13,6 @@ calculate_kruskal_polyA <- function(polyA_table=get_gene_id_out, grouping_factor
     stop("'polyA_table' must be defined.")
   }
   
-  if (missing(control_group) | missing(treated_group)) {
-    stop("Both 'control_group' and 'treated_group' must be provided.")
-  }
-  
   base::message("Starting to process the data and calculate statistics...")
   
   start_time <- base::Sys.time()
