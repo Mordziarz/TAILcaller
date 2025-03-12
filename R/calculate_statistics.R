@@ -43,7 +43,7 @@ calculate_statistics <- function(polyA_table=get_gene_id_out, grouping_factor="g
     
     polyA_table_unique <- polyA_table[polyA_table[[which_level]] == which_molecule, ]
     
-    if (base::length(base::unique(polyA_table_unique[grouping_factor])) == 2) {
+    if (base::nrow(base::unique(polyA_table_unique[grouping_factor])) == 2) {
       
       group_ctr_data <- polyA_table_unique$polyA_length[polyA_table_unique[grouping_factor] == control_group]
       group_trt_data <- polyA_table_unique$polyA_length[polyA_table_unique[grouping_factor] == treated_group]
