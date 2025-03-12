@@ -31,7 +31,7 @@ get_gene_id <- function(polyA_table=get_polyA_out,gtf_file= gtf, transcript_colu
   
   gtf <- gtf[,c(gene_column_gtf,transcript_column_gtf)]
 
-  get_gene_id_out <- base::merge(polyA_table,gtf_file,by.x="transcript_id",by.y=transcript_column_gtf)
+  get_gene_id_out <- base::merge(polyA_table,gtf,by.x="transcript_id",by.y=transcript_column_gtf)
   
   end_time <- base::Sys.time()
 
