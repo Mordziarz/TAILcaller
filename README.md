@@ -113,7 +113,7 @@ TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out)
 TAILcaller allows the user to create a density plot. The user can choose whether to display the median (stats = "median") or the mean (stats = "mean").
 
 ```r
-TAILcaller::plot_density(polyA_table = get_gene_id_out,stats = "median")
+TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "median")
 ```
 
 ![Density](plots/density.png)
