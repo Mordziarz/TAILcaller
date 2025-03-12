@@ -37,7 +37,7 @@ if (stats=="median") {
     dplyr::group_by(!!rlang::sym(grouping_column)) %>%
     dplyr::summarise(median_polyA_length = stats::median(polyA_length))
   
-  density_plot <- density_plot + ggplot2::geom_vline(data = medians, ggplot2::aes(xintercept = median_polyA_length, color = !!rlang::sym(grouping_column)), 
+  density_plot <- density_plot + ggplot2::geom_vline(data = medians, ggplot2::aes(xintercept = median_polyA_length, color = grouping_column), 
                                             linetype = "dashed", size = 1)
 }
 
@@ -47,7 +47,7 @@ means <- polyA_table %>%
   dplyr::group_by(!!rlang::sym(grouping_column)) %>%
   dplyr::summarise(mean_polyA_length = base::mean(polyA_length))
 
-density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xintercept = mean_polyA_length, color = !!rlang::sym(grouping_column)), 
+density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xintercept = mean_polyA_length, color = grouping_column), 
            linetype = "dashed", size = 1)
 
 }
