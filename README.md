@@ -92,7 +92,7 @@ TAILcaller::calculate_statistics(polyA_table = get_gene_id_out,grouping_factor =
 For n > 2, the calculate_kruskal_polyA() function has been prepared.
 
 ```r
-TAILcaller::calculate_kruskal_polyA(polyA_table = tabela1,grouping_factor = "sample_name",which_level = "gene_id")
+TAILcaller::calculate_kruskal_polyA(polyA_table = get_gene_id_out,grouping_factor = "sample_name",which_level = "gene_id")
 ```
 
 # Volcano plot
