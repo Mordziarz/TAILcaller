@@ -24,7 +24,7 @@ plot_density <- function(polyA_table=get_gene_id_out,stats="median",grouping_col
   
 max_density <- stats::quantile(polyA_table$polyA_length, probs = c(0.99))[1]
 
-density_plot <- ggplot2::ggplot(polyA_table, ggplot2::aes(x = polyA_length, y=..ndensity.., color = grouping_column)) +
+density_plot <- ggplot2::ggplot(polyA_table, ggplot2::aes(x = polyA_length, y=..ndensity.., color = !!rlang::sym(grouping_column))) +
                 ggplot2::geom_density() +
                 ggplot2::stat_density(geom = "line", position = "identity", size = 1) +
                 ggplot2::labs(title = "Density plot of polyA lengths", x = "PolyA length", y = "Density (normalized)") +
@@ -37,7 +37,7 @@ if (stats=="median") {
     dplyr::group_by(!!rlang::sym(grouping_column)) %>%
     dplyr::summarise(median_polyA_length = stats::median(polyA_length))
   
-  density_plot <- density_plot + ggplot2::geom_vline(data = medians, ggplot2::aes(xintercept = median_polyA_length, color = grouping_column), 
+  density_plot <- density_plot + ggplot2::geom_vline(data = medians, ggplot2::aes(xintercept = median_polyA_length, color = !!rlang::sym(grouping_column)), 
                                             linetype = "dashed", size = 1)
 }
 
@@ -47,7 +47,7 @@ means <- polyA_table %>%
   dplyr::group_by(!!rlang::sym(grouping_column)) %>%
   dplyr::summarise(mean_polyA_length = base::mean(polyA_length))
 
-density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xintercept = mean_polyA_length, color = grouping_column), 
+density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xintercept = mean_polyA_length, color = !!rlang::sym(grouping_column)), 
            linetype = "dashed", size = 1)
 
 }
