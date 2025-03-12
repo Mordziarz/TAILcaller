@@ -27,7 +27,7 @@ get_gene_id <- function(polyA_table=get_polyA_out,gtf_file= gtf, transcript_colu
 
   gtf <- base::as.data.frame(gtf_file)
 
-  gtf <- gtf[!base::duplicated(gtf$transcript_column_gtf),]
+  gtf <- gtf[!base::duplicated(gtf[transcript_column_gtf]),]
   
   gtf <- gtf[,c(gene_column_gtf,transcript_column_gtf)]
 
