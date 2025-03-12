@@ -34,7 +34,7 @@ get_matrix <- function(count_molecules_out = count_molecules_out,
   }
 
   count_table_wide <- count_molecules_out %>%
-    dplyr::select(!!sym(grouping_factor), !!rlang::sym(which_level), !!rlang::sym(statistic)) %>%
+    dplyr::select(!!rlang::sym(grouping_factor), !!rlang::sym(which_level), !!rlang::sym(statistic)) %>%
     tidyr::pivot_wider(
       names_from = !!rlang::sym(grouping_factor),
       values_from = !!rlang::sym(statistic),
