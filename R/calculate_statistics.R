@@ -43,10 +43,10 @@ calculate_statistics <- function(polyA_table=get_gene_id_out, grouping_factor="g
     
     polyA_table_unique <- polyA_table[polyA_table[[which_level]] == which_molecule, ]
     
-    if (base::length(base::unique(polyA_table_unique$group)) == 2) {
+    if (base::length(base::unique(polyA_table_unique[grouping_factor])) == 2) {
       
-      group_ctr_data <- polyA_table_unique$polyA_length[polyA_table_unique$group == control_group]
-      group_trt_data <- polyA_table_unique$polyA_length[polyA_table_unique$group == treated_group]
+      group_ctr_data <- polyA_table_unique$polyA_length[polyA_table_unique[grouping_factor] == control_group]
+      group_trt_data <- polyA_table_unique$polyA_length[polyA_table_unique[grouping_factor] == treated_group]
       
       p_val <- base::suppressWarnings(stats::wilcox.test(stats::as.formula(formula), data = polyA_table_unique)$p.value)
       p_values[i] <- p_val
@@ -91,7 +91,8 @@ calculate_statistics <- function(polyA_table=get_gene_id_out, grouping_factor="g
   how_molecules$cohen_effect <- cohen_effect
   how_molecules$padj <- stats::p.adjust(how_molecules$p_value, method = "fdr")
   how_molecules$Log2FC <- log2(how_molecules$fold_change)
-  
+
+
   end_time <- base::Sys.time()
   
   base::message("Processing complete. Time taken: ", base::round(difftime(end_time, start_time, units = "mins"), 2), " minutes")
