@@ -66,12 +66,11 @@ library(rtracklayer)
 
 gtf <- import.gff("path/to/gtf/file")
 gtf <- as.data.frame(gtf)
-gtf <- gtf[!duplicated(gtf$transcript_id),]
-gtf <- gtf[,c("gene_id","transcript_id")]
+
 ```
 
 ```r
-TAILcaller::get_gene_id(polyA_table=tabela,transcript_column_gtf = "transcript_id",gtf_file = gtf)
+TAILcaller::get_gene_id(polyA_table=tabela,gtf_file = gtf,transcript_column_gtf = "transcript_id",gene_column_gtf = "gene_id")
 ```
 
 # Calculation of basic statistics and counting molecules with polyA tails
