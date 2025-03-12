@@ -53,7 +53,18 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
 }
 
 formula <- base::paste0("polyA_length ~ ", grouping_column)
+
+if(nrow(unique(polyA_table$grouping_column)) == 1) {
+res_stats <- "The Wilcoxon or Kruskal-Wallis test could not be performed because your n = 1."
+}
+
+if(nrow(unique(polyA_table$grouping_column)) == 2) {
 res_stats <- stats::wilcox.test(stats::as.formula(formula), data=polyA_table)
+}
+
+if(nrow(unique(polyA_table$grouping_column)) > 2) {
+res_stats <- kruskal.test(Sepal_Width~Species, data=iris_sub)
+}
 
 return(list(wilcox_test = res_stats, plot = density_plot))
 
