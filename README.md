@@ -110,10 +110,10 @@ TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out)
 
 # Density plot 
 
-TAILcaller allows the user to create a density plot. The user can choose whether to display the median (stats = "median") or the mean (stats = "mean").
+TAILcaller allows the user to create a density plot. The user can choose whether to display the median (stats = "median") or the mean (stats = "mean"). The density_plot function executes a global Wilcoxon statistical test for n = 2 and a Kruskal-Wallis test for n > 2.
 
 ```r
-TAILcaller::plot_density(polyA_table = get_polyA_out ,stats = "median",grouping_column = "group")
+TAILcaller::plot_density(polyA_table = tabela1,stats = "mean",grouping_column = "group")
 ```
 
 ![Density](plots/density.png)
