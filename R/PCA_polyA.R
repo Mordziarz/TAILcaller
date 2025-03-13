@@ -14,7 +14,7 @@ PCA_polyA <- function(get_matrix_out=get_matrix_out,samples_table=samples_table,
          call. = FALSE)
   }
   samples_table$names <- samples_table$sample_name
-  get_matrix_out <- t(get_matrix_out)
+  get_matrix_out <- base::t(get_matrix_out)
   pca <- stats::prcomp(get_matrix_out, scale. = FALSE)
   pca_data <- base::as.data.frame(pca$x)
   pca_data$names <- base::rownames(get_matrix_out)
