@@ -143,13 +143,14 @@ res <- TAILcaller::polyA_heatmap(polyA_table = polyA_table,grouping_factor = "sa
 res$matrix
 ```
 
-![heatmap](plots/heatmap_polyA.png)
-
 ```r
 res$heatmap
 ```
-![tree](plots/tree_polyA.png)
+
+![heatmap](plots/heatmap_polyA.png)
 
 ```r
 res$tree
 ```
+
+![tree](plots/tree_polyA.png)
