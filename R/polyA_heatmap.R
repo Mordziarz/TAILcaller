@@ -3,11 +3,12 @@
 #' @param polyA_table the table was created using the get_polyA function
 #' @param grouping_factor grouping factor that splits the plot by the given column
 #' @param frame the length of the frame upon which the matrix will be created
+#' @param select the "normalized" output
 #' @return a list.
 #' @export
 #'
 
-polyA_heatmap <- function(polyA_table=polyA_table,grouping_factor = "group", frame=10){
+polyA_heatmap <- function(polyA_table=polyA_table,grouping_factor = "group", frame=10, select = "normalized"){
 
   if (!is.data.frame(polyA_table)) {
     stop("polyA_table must be a data frame.")
@@ -51,13 +52,28 @@ for (i in 1:nrow(polyA_table)) {
   }
 }
 
+if (select =="normalized") {
+
+matrix_data_transform <- matrix_data
+
+for (i in 1:base::nrow(matrix_data_transform)) {
+  for (j in 1:base::ncol(matrix_data_transform)) {
+    matrix_data_transform[i,j] <- (base::sum(matrix_data[i,j])/base::sum(matrix_data[i,])) * 100
+  }
+}
+
+matrix_data <- matrix_data_transform
+
+}
+
 quantiles <- stats::quantile(matrix_data, probs = base::seq(0, 1, length.out = 10))
+
 
 colors <- circlize::colorRamp2(quantiles,
                                c("#08519c","#3182bd","#6baed6","#9ecae1","#c6dbef","#fdd49e","#fdbb84","#fc8d59","#e34a33","#b30000"))
 
 
-heatmap_rscu <- ComplexHeatmap::Heatmap(matrix_data,name = "poly(A) count",
+heatmap_rscu <- ComplexHeatmap::Heatmap(matrix_data,name = "poly(A)\ncompartment",
                                         col = colors,
                                         column_dend_height = unit(3, "cm"),
                                         row_dend_width = unit(3, "cm"),
@@ -69,5 +85,5 @@ tree <- ggtree::ggtree(tree)
 
 base::message("Success !!!")
 
-return(list(matrix = matrix_data, heatmap = heatmap_rscu, tree = tree))
+return(list(matrix = matrix_data, normalized_matrix=matrix_data_transform, heatmap = heatmap_rscu, tree = tree))
 }
