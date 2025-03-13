@@ -23,6 +23,9 @@ library(stats)
 library(tidyr)
 library(rlang)
 library(ggplot2)
+library(ComplexHeatmap)
+library(ggtree)
+library(circlize)
 ```
 
 # set.seed() for reproducible results
