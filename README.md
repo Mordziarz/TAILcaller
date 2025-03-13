@@ -157,3 +157,13 @@ res$tree
 ```
 
 ![tree](plots/tree_polyA.png)
+
+# PCA
+
+The user can perform PCA based on the output from the get_matrix_out() function.
+
+```r
+TAILcaller::PCA_polyA(get_matrix_out = get_matrix_out,samples_table = samples_table,grouping_factor = "group")
+```
+
+![PCA](plots/PCA.png)
