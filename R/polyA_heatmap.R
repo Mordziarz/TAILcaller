@@ -39,7 +39,7 @@ polyA_heatmap <- function(polyA_table=polyA_table,grouping_factor = "group", fra
          call. = FALSE)
   }
 
-if (select =="base") {
+if (select == "base") {
 
 max_density <- stats::quantile(polyA_table$polyA_length, probs = c(0.99))[1]
 breaks <- base::seq(1, base::max(max_density) + frame, by = frame)
@@ -81,7 +81,7 @@ base::message("Success !!!")
 return(list(matrix = matrix_data, heatmap = heatmap_rscu, tree = tree))
 }
 
-if (select =="normalized") {
+if (select == "normalized") {
 
 max_density <- stats::quantile(polyA_table$polyA_length, probs = c(0.99))[1]
 breaks <- base::seq(1, base::max(max_density) + frame, by = frame)
@@ -108,10 +108,6 @@ for (i in 1:base::nrow(matrix_data_transform)) {
     matrix_data_transform[i,j] <- (base::sum(matrix_data[i,j])/base::sum(matrix_data[i,])) * 100
   }
 }
-
-matrix_data <- matrix_data_transform
-
-
 
 quantiles <- stats::quantile(matrix_data_transform, probs = base::seq(0, 1, length.out = 10))
 
