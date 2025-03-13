@@ -138,10 +138,10 @@ TAILcaller::get_matrix(count_molecules_out = count_molecules_out,grouping_factor
 ```
 # PCA
 
-The user can perform PCA based on the output from the get_matrix_out() function.
+The user can perform PCA based on the output from the get_matrix() function.
 
 ```r
-TAILcaller::PCA_polyA(get_matrix_out = get_matrix,samples_table = samples_table,grouping_factor = "group")
+TAILcaller::PCA_polyA(get_matrix_out = get_matrix_out,samples_table = samples_table,grouping_factor = "group")
 ```
 
 ![PCA](plots/PCA.png)
