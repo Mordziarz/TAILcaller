@@ -136,6 +136,16 @@ count_molecules_out <- TAILcaller::count_molecules(polyA_table = get_gene_id_out
 
 TAILcaller::get_matrix(count_molecules_out = count_molecules_out,grouping_factor = "sample_name",which_level = "gene_id",statistic = "median_polyA_length")
 ```
+# PCA
+
+The user can perform PCA based on the output from the get_matrix_out() function.
+
+```r
+TAILcaller::PCA_polyA(get_matrix_out = get_matrix,samples_table = samples_table,grouping_factor = "group")
+```
+
+![PCA](plots/PCA.png)
+
 # Heatmap 
 
 The user can generate a heatmap based on an interval matrix (select = "base") or a normalized matrix (based on percentages, select = "normalized"), which are created within the polyA_heatmap function. Additionally, it is possible to perform clustering (phylogenetic tree) based on the heatmap.
@@ -157,13 +167,3 @@ res$tree
 ```
 
 ![tree](plots/tree_polyA.png)
-
-# PCA
-
-The user can perform PCA based on the output from the get_matrix_out() function.
-
-```r
-TAILcaller::PCA_polyA(get_matrix_out = get_matrix_out,samples_table = samples_table,grouping_factor = "group")
-```
-
-![PCA](plots/PCA.png)
