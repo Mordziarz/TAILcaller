@@ -138,10 +138,10 @@ TAILcaller::get_matrix(count_molecules_out = count_molecules_out,grouping_factor
 ```
 # Heatmap 
 
-The user can generate a heatmap based on an interval matrix or a normalized matrix (based on percentages), which are created within the polyA_heatmap function. Additionally, it is possible to perform clustering (phylogenetic tree) based on the heatmap.
+The user can generate a heatmap based on an interval matrix (select = "base") or a normalized matrix (based on percentages, select = "normalized"), which are created within the polyA_heatmap function. Additionally, it is possible to perform clustering (phylogenetic tree) based on the heatmap.
 
 ```r
-res <- TAILcaller::polyA_heatmap(polyA_table = polyA_table,grouping_factor = "sample_name",jump = 10,frame = 10)
+res <- TAILcaller::polyA_heatmap(polyA_table = polyA_table,grouping_factor = "sample_name",frame = 10,select="base")
 
 res$matrix
 ```
