@@ -1,9 +1,10 @@
 # TAILcaller
 
-R package for analyzing polyA tails after dorado basecalling. Dorado allows polyA estimation. The command to perform basecalling for TAILcaller to work correctly.
+R package for analyzing polyA tails after dorado basecalling. Dorado allows polyA estimation. 
 
 ![PCA](plots/TAILcaller.png)
 
+The command to perform basecalling for TAILcaller to work correctly.
 ```r
 ~/dorado-0.8.1-linux-x64/bin/dorado basecaller sup --reference transcriptome.fasta --estimate-poly-a pod5s/ > CONTROL.bam
 ```
