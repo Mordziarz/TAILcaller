@@ -80,7 +80,6 @@ base::message("Success !!!")
 
 return(list(matrix = matrix_data, heatmap = heatmap_rscu, tree = tree))
 }
-}
 
 if (select =="normalized") {
 
