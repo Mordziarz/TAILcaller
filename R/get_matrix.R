@@ -1,4 +1,4 @@
-#' Creating a ma plot
+#' Creating a matrix
 #'
 #' @param count_molecules_out the table was created using the count_molecules_out function
 #' @param grouping_factor the name of the column in the table that divides the experiment into groups

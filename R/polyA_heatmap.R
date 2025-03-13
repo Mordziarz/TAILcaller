@@ -1,4 +1,13 @@
-polyA_heatmap <- function(polyA_table=polyA_table,grouping_factor = "group", jump = 5, frame=10){
+#' Creating a matrix, dendogram and heatmap
+#'
+#' @param polyA_table the table was created using the get_polyA function
+#' @param grouping_factor grouping factor that splits the plot by the given column
+#' @param frame the length of the frame upon which the matrix will be created
+#' @return a list.
+#' @export
+#'
+
+polyA_heatmap <- function(polyA_table=polyA_table,grouping_factor = "group", frame=10){
 
   if (!is.data.frame(polyA_table)) {
     stop("polyA_table must be a data frame.")
@@ -11,10 +20,7 @@ polyA_heatmap <- function(polyA_table=polyA_table,grouping_factor = "group", jum
   if (!grouping_factor %in% names(polyA_table)) {
     stop(paste("Column", grouping_factor, "does not exist in polyA_table."))
   }
-  
-  if (!is.numeric(jump) || jump <= 0 || length(jump) != 1) {
-    stop("jump must be a single, positive number.")
-  }
+
   if (!is.numeric(frame) || frame <= 0 || length(frame) != 1) {
     stop("frame must be a single, positive number.")
   }
@@ -28,7 +34,7 @@ polyA_heatmap <- function(polyA_table=polyA_table,grouping_factor = "group", jum
   }
 
 max_density <- stats::quantile(polyA_table$polyA_length, probs = c(0.99))[1]
-breaks <- base::seq(1, base::max(max_density) + frame, by = jump)
+breaks <- base::seq(1, base::max(max_density) + frame, by = frame)
 matrix_data <- base::matrix(0, nrow = base::length(base::unique(polyA_table[[grouping_factor]])), ncol = base::length(breaks) - 1)
 base::rownames(matrix_data) <- base::unique(polyA_table[[grouping_factor]])
 base::colnames(matrix_data) <- base::paste0(breaks[-base::length(breaks)], "-", breaks[-1] - 1)
