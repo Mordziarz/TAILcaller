@@ -9,11 +9,12 @@ library(TAILcaller)
 library(Rsamtools)
 library(dplyr)
 library(stats)
-library(dplyr)
 library(tidyr)
 library(rlang)
 library(ggplot2)
+library(ComplexHeatmap)
 library(ggtree)
+library(circlize)
 
 set.seed(123) 
 
