@@ -10,7 +10,11 @@
 
 R package for analyzing polyA tails after dorado basecalling. Dorado allows polyA estimation. 
 
-![PCA](plots/TAILcaller.png)
+test_data = https://doi.org/10.6084/m9.figshare.28632515.v1
+
+
+
+![FLOW](plots/TAILcaller.png)
 
 The command to perform basecalling for TAILcaller to work correctly.
 ```r
