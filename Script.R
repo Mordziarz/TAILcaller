@@ -85,6 +85,9 @@ calculate_statistics_out <-TAILcaller::calculate_statistics(polyA_table = get_ge
                                                             control_group = "CTR",
                                                             treated_group = "HIGH")
 
+calculate_statistics_out_sig <- calculate_statistics_out[!is.na(calculate_statistics_out$padj),]
+calculate_statistics_out_sig <- calculate_statistics_out_sig[calculate_statistics_out_sig$padj < 0.05,]
+
 ###########################
 ######### Volcano
 ###########################
