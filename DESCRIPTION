@@ -1,7 +1,7 @@
 Package: TAILcaller
 Type: Package
 Title: R package for analyzing polyA tails after dorado basecalling.
-Version: 0.1.0
+Version: 0.2.0
 Author: Mateusz Mazdziarz
 Maintainer: The package maintainer <mazdziarzm@gmail.com>
 Description: R package for analyzing polyA tails after dorado basecalling.
