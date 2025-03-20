@@ -71,7 +71,7 @@ get_matrix_out <- TAILcaller::get_matrix(count_molecules_out = count_molecules_o
 
 pca <- TAILcaller::PCA_polyA(get_matrix_out = get_matrix_out,samples_table = samples_table,grouping_factor = "group")
 
-png("/dane/PCA.png", width=6, height=6, units = "in", res = 300)
+png("PCA.png", width=6, height=6, units = "in", res = 300)
 pca
 dev.off()
 
@@ -93,7 +93,7 @@ calculate_statistics_out_sig <- calculate_statistics_out_sig[calculate_statistic
 ###########################
 volcano <- TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out)
 
-png("/dane/volcano.png", width=6, height=6, units = "in", res = 300)
+png("volcano.png", width=6, height=6, units = "in", res = 300)
 volcano
 dev.off()
 
@@ -102,7 +102,7 @@ dev.off()
 ###########################
 ma_plot <- TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out)
 
-png("/dane/ma_plot.png", width=6, height=6, units = "in", res = 300)
+png("ma_plot.png", width=6, height=6, units = "in", res = 300)
 ma_plot
 dev.off()
 
@@ -114,7 +114,7 @@ density_plot <- TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "me
 
 density_plot$wilcox_test
 
-png("/dane/density_plot.png", width=6, height=6, units = "in", res = 300)
+png("density_plot.png", width=6, height=6, units = "in", res = 300)
 density_plot$plot
 dev.off()
 
@@ -126,10 +126,10 @@ res <- TAILcaller::polyA_heatmap(polyA_table = get_polyA_out,grouping_factor = "
 
 res$matrix
 
-png("/dane/heatmap.png", width=6, height=6, units = "in", res = 300)
+png("heatmap.png", width=6, height=6, units = "in", res = 300)
 res$heatmap
 dev.off()
 
-png("/dane/tree.png", width=7.5, height=6, units = "in", res = 300)
+png("tree.png", width=7.5, height=6, units = "in", res = 300)
 res$tree + geom_tiplab(fontface="italic") + xlim(NA,0.9)
 dev.off()
