@@ -1,5 +1,13 @@
 # TAILcaller
 
+<!-- badges: start -->
+
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15056929.svg)](https://doi.org/10.5281/zenodo.15056929)
+
+
+<!-- badges: end -->
+
 R package for analyzing polyA tails after dorado basecalling. Dorado allows polyA estimation. 
 
 ![PCA](plots/TAILcaller.png)
