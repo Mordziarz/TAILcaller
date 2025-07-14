@@ -134,7 +134,9 @@ TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out,
 TAILcaller allows the user to create a MA plot.
 
 ```r
-TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out)
+TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out,
+                            collapsed_color = "green",
+                            expansion_color = "red")
 ```
 
 ![MAplot](plots/maplot.png)
