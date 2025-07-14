@@ -143,7 +143,12 @@ TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out,
 
 # Density plot 
 
-TAILcaller allows the user to create a density plot. The user can choose whether to display the median (stats = "median") or the mean (stats = "mean"). The density_plot function executes a global Wilcoxon statistical test for n = 2 and a Kruskal-Wallis test for n > 2.
+Generates a normalized density plot of per-read poly(A) tail length distributions and overlays group-specific summary lines. Supports either the median (stats = "median") or the mean (stats = "mean"). Automatically performs a global nonparametric test:
+
+    For two groups (n = 2), uses either a two-sample t-test (if normality and equal variances hold) or a Wilcoxon rank-sum test.
+
+    For more than two groups (n > 2), uses either one-way ANOVA with Tukey’s HSD post-hoc or a Kruskal–Wallis test with Dunn’s multiple comparisons.
+
 
 ```r
 TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_column = "group")
