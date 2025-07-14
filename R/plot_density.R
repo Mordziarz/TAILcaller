@@ -174,7 +174,7 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
     plot        = density_plot,
     normality   = normality,
     variance    = levene_res,
-    comparison  = group_test
+    test        = group_test
   ))
 }
 
