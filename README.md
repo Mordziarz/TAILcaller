@@ -171,12 +171,14 @@ TAILcaller::PCA_polyA(get_matrix_out = get_matrix_out,samples_table = samples_ta
 
 The user can generate a heatmap based on an interval matrix (select = "base") or a normalized matrix (based on percentages, select = "normalized"), which are created within the polyA_heatmap function. Additionally, it is possible to perform clustering (phylogenetic tree) based on the heatmap.
 
+heatmap_color: Please select one of the following valid palettes: "red_green", "green_red", "blue_green", "green_blue", "blue_red", or "red_blue".
+
 ```r
 polyA_heatmap_out <- TAILcaller::polyA_heatmap(polyA_table = get_polyA_out,
                                     grouping_factor = "sample_name",
                                     frame = 10,
                                     select="base",
-                                    )
+                                    heatmap_color ="green_red")
 
 polyA_heatmap_out$matrix
 ```
