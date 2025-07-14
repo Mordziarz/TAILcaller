@@ -43,6 +43,8 @@
 #' \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{scale_color_manual}},
 #' \code{\link[ggplot2]{scale_fill_manual}} for plot customization.
 #'
+#' @author Mateusz Mazdziarz
+#'
 #' @importFrom ggplot2 ggplot aes geom_point geom_vline geom_hline xlab ylab theme element_text
 #' @importFrom ggplot2 scale_color_manual scale_fill_manual scale_alpha_manual theme_bw guides guide_legend
 #' @importFrom stats as.numeric

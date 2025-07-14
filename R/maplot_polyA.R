@@ -45,6 +45,8 @@
 #' \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{scale_color_manual}},  
 #' \code{\link[ggplot2]{scale_fill_manual}} for styling.
 #'
+#' @author Mateusz Mazdziarz
+#'
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline xlab ylab theme element_text theme_bw guides guide_legend scale_color_manual scale_fill_manual scale_alpha_manual
 #' @importFrom stats as.numeric
 #' @importFrom base ifelse paste0 stop missing order

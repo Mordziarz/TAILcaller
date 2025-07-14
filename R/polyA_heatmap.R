@@ -66,6 +66,8 @@
 #' \code{\link[ComplexHeatmap]{Heatmap}} for heatmap generation;  
 #' \code{\link[ggtree]{ggtree}} for dendrogram plotting.
 #'
+#' @author Mateusz Mazdziarz
+#'
 #' @importFrom stats quantile
 #' @importFrom circlize colorRamp2
 #' @importFrom ComplexHeatmap Heatmap draw row_dend
