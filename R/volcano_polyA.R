@@ -5,7 +5,7 @@
 #' @export
 #'
 
-volcano_polyA <- function(calculate_statistics_out=calculate_statistics_out){
+volcano_polyA <- function(calculate_statistics_out=calculate_statistics_out,collapsed_color = "green",expansion_color = "red"){
   
   if (missing(calculate_statistics_out)) {
     stop("'calculate_statistics_out' must be defined.")
@@ -49,9 +49,9 @@ polya_volcano <- ggplot2::ggplot(calculate_statistics_out,
         legend.text.align = 0,
         legend.title.align = 0,
         axis.title = ggplot2::element_text(size = ggplot2::rel(4.0))) +
-  ggplot2::scale_color_manual(values = c("Collapsed" = "green2", "Expansion" = "red2", "No significant" = "grey35"),
+  ggplot2::scale_color_manual(values = c("Collapsed" = paste0(collapsed_color,2), "Expansion" = paste0(expansion_color,2), "No significant" = "grey35"),
                      name = "PolyA tail length") +  
-  ggplot2::scale_fill_manual(values = c("Collapsed" = "green4", "Expansion" = "red4", "No significant" = "grey50"),
+  ggplot2::scale_fill_manual(values = c("Collapsed" = paste0(collapsed_color,4), "Expansion" = paste0(expansion_color,4), "No significant" = "grey50"),
                     name = "PolyA tail length") +
   ggplot2::scale_alpha_manual(values = c("Collapsed" = 0.5, "Expansion" = 0.5, "No significant" = 0.2),
                     name = "PolyA tail length") +  

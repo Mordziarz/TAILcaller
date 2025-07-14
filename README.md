@@ -122,7 +122,9 @@ TAILcaller::calculate_kruskal_polyA(polyA_table = get_gene_id_out,grouping_facto
 TAILcaller allows the user to create a volcano plot.
 
 ```r
-TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out)
+TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out,
+                            collapsed_color = "green",
+                            expansion_color = "red")
 ```
 
 ![Volcano](plots/volcano.png)
