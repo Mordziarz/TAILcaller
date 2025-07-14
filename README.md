@@ -145,9 +145,9 @@ TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out,
 
 Generates a normalized density plot of per-read poly(A) tail length distributions and overlays group-specific summary lines. Supports either the median (stats = "median") or the mean (stats = "mean"). Automatically performs a global nonparametric test:
 
-    For two groups (n = 2), uses either a two-sample t-test (if normality and equal variances hold) or a Wilcoxon rank-sum test.
+For two groups (n = 2), uses either a two-sample t-test (if normality and equal variances hold) or a Wilcoxon rank-sum test.
 
-    For more than two groups (n > 2), uses either one-way ANOVA with Tukey’s HSD post-hoc or a Kruskal–Wallis test with Dunn’s multiple comparisons.
+For more than two groups (n > 2), uses either one-way ANOVA with Tukey’s HSD post-hoc or a Kruskal–Wallis test with Dunn’s multiple comparisons.
 
 
 ```r
