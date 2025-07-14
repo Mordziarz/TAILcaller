@@ -1,9 +1,52 @@
-#' Creating a volcano plot
+#' Create a Volcano Plot of Poly(A) Tail Length Changes
 #'
-#' @param calculate_statistics_out the table was created using the calculate_statistics function
-#' @return a table object.
+#' This function generates a volcano plot to visualize differential poly(A) tail
+#' length changes between conditions. It classifies transcripts as “Collapsed,”
+#' “Expansion,” or “No significant” based on log₂ fold change and adjusted
+#' p-value thresholds, then plots log₂ fold change versus –log₁₀(padj) with
+#' custom colors and transparency.
+#'
+#' @param calculate_statistics_out A data frame produced by \code{\link{calculate_statistics}()}, 
+#'   containing at minimum the columns \code{Log2FC} (numeric) and \code{padj} (numeric).
+#' @param collapsed_color A single color name or hex code used for points classified as “Collapsed.”
+#' @param expansion_color A single color name or hex code used for points classified as “Expansion.”
+#'
+#' @return A \code{ggplot} object representing the volcano plot, with points colored
+#'   and shaded by poly(A) tail length change category.
+#'
 #' @export
 #'
+#' @details
+#' The function performs the following steps:
+#' \itemize{
+#'   \item Validates that \code{calculate_statistics_out} is provided and contains 
+#'     \code{Log2FC} and \code{padj} columns.
+#'   \item Converts \code{Log2FC} and \code{padj} to numeric and removes any NA values.
+#'   \item Classifies each transcript into:
+#'     \describe{
+#'       \item{Collapsed}{\code{Log2FC < 0} and \code{padj < 0.05}}
+#'       \item{Expansion}{\code{Log2FC > 0} and \code{padj < 0.05}}
+#'       \item{No significant}{all others}
+#'     }
+#'   \item Sets plotting aesthetics: vertical line at \code{x = 0}, horizontal line at 
+#'     \code{y = –log10(0.05)}, axis labels, theme, and legend formatting.
+#'   \item Applies manual scales for color, fill, and alpha using the provided 
+#'     \code{collapsed_color} and \code{expansion_color}, with greys for non-significant points.
+#' }
+#'
+#' @section Color Mapping:
+#' The \code{collapsed_color} and \code{expansion_color} arguments are used to build  
+#' two opacity variants (alpha = 0.5 and 0.25) for fill and color aesthetics.
+#'
+#' @seealso
+#' \code{\link{calculate_statistics}} for generating the input data;
+#' \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{scale_color_manual}},
+#' \code{\link[ggplot2]{scale_fill_manual}} for plot customization.
+#'
+#' @importFrom ggplot2 ggplot aes geom_point geom_vline geom_hline xlab ylab theme element_text
+#' @importFrom ggplot2 scale_color_manual scale_fill_manual scale_alpha_manual theme_bw guides guide_legend
+#' @importFrom stats as.numeric
+#' @importFrom base ifelse paste0 stop missing
 
 volcano_polyA <- function(calculate_statistics_out=calculate_statistics_out,collapsed_color = "green",expansion_color = "red"){
   
@@ -49,9 +92,9 @@ polya_volcano <- ggplot2::ggplot(calculate_statistics_out,
         legend.text.align = 0,
         legend.title.align = 0,
         axis.title = ggplot2::element_text(size = ggplot2::rel(4.0))) +
-  ggplot2::scale_color_manual(values = c("Collapsed" = paste0(collapsed_color,2), "Expansion" = paste0(expansion_color,2), "No significant" = "grey35"),
+  ggplot2::scale_color_manual(values = c("Collapsed" = base::paste0(collapsed_color,2), "Expansion" = base::paste0(expansion_color,2), "No significant" = "grey35"),
                      name = "PolyA tail length") +  
-  ggplot2::scale_fill_manual(values = c("Collapsed" = paste0(collapsed_color,4), "Expansion" = paste0(expansion_color,4), "No significant" = "grey50"),
+  ggplot2::scale_fill_manual(values = c("Collapsed" = base::paste0(collapsed_color,4), "Expansion" = base::paste0(expansion_color,4), "No significant" = "grey50"),
                     name = "PolyA tail length") +
   ggplot2::scale_alpha_manual(values = c("Collapsed" = 0.5, "Expansion" = 0.5, "No significant" = 0.2),
                     name = "PolyA tail length") +  
