@@ -43,6 +43,8 @@
 #' \code{\link[stats]{prcomp}} for PCA computation;  
 #' \code{\link[ggplot2]{geom_point}} for plotting.
 #'
+#' @author Mateusz Mazdziarz
+#'
 #' @importFrom stats prcomp summary
 #' @importFrom ggplot2 ggplot aes geom_point xlab ylab ggtitle theme_bw theme element_blank
 #' @importFrom base merge round paste0 t
