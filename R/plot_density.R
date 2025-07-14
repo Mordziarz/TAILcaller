@@ -109,23 +109,72 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
 
 }
 
-formula <- base::paste0("polyA_length ~ ", grouping_column)
-
-if (grouping_column %in% names(polyA_table)) {
-  unique_count <- base::nrow(base::unique(polyA_table[grouping_column])) 
-  if (unique_count == 1) {
-    res_stats <- "The Wilcoxon or Kruskal-Wallis test could not be performed because your n = 1."
-  } else if (unique_count == 2) {
-    res_stats <- stats::wilcox.test(stats::as.formula(formula), data = polyA_table)
-  } else if (unique_count > 2) {
-    res_stats <- stats::kruskal.test(stats::as.formula(formula), data = polyA_table)
+  normality <- polyA_table %>%
+    dplyr::group_by(!!rlang::sym(grouping_column)) %>%
+    dplyr::summarise(
+      n         = dplyr::n(),
+      p_value   = if (n() <= 5000) {
+                    stats::shapiro.test(polyA_length)$p.value
+                  } else {
+                    nortest::lillie.test(polyA_length)$p.value
+                  }
+    )
+  
+  ngroups <- dplyr::n_distinct(polyA_table[[grouping_column]])
+  if (ngroups >= 2) {
+    levene_res <- car::leveneTest(
+      as.formula(paste0("polyA_length ~ ", grouping_column)),
+      data = polyA_table
+    )
   } else {
-    res_stats <- "Unexpected number of unique values in grouping column."
+    levene_res <- NULL
   }
-} else {
-  res_stats <- base::paste("Error: Column", grouping_column, "not found in polyA_table.")
+  
+  if (ngroups < 2) {
+    group_test <- "Only one group; no comparison performed."
+  } else if (ngroups == 2) {
+    use_t_test <- all(normality$p_value > 0.05) &&
+                  (!is.null(levene_res) && levene_res[["Pr(>F)"]][1] > 0.05)
+    if (use_t_test) {
+      group_test <- stats::t.test(
+        as.formula(paste0("polyA_length ~ ", grouping_column)),
+        data = polyA_table
+      )
+    } else {
+      group_test <- stats::wilcox.test(
+        as.formula(paste0("polyA_length ~ ", grouping_column)),
+        data = polyA_table
+      )
+    }
+  } else {
+    if (all(normality$p_value > 0.05) &&
+        !is.null(levene_res) && levene_res[["Pr(>F)"]][1] > 0.05) {
+      aov_res <- stats::aov(
+        as.formula(paste0("polyA_length ~ ", grouping_column)),
+        data = polyA_table
+      )
+      anova_res <- summary(aov_res)
+      tukey_res <- stats::TukeyHSD(aov_res)
+      group_test <- list(anova = anova_res, tukey = tukey_res)
+    } else {
+      kruskal_res <- stats::kruskal.test(
+        as.formula(paste0("polyA_length ~ ", grouping_column)),
+        data = polyA_table
+      )
+      dunn_res <- dunn.test::dunn.test(
+        x = polyA_table$polyA_length,
+        g = polyA_table[[grouping_column]],
+        method = "bonferroni"
+      )
+      group_test <- list(kruskal = kruskal_res, dunn = dunn_res)
+    }
+  }
+  
+  return(list(
+    plot        = density_plot,
+    normality   = normality,
+    variance    = levene_res,
+    comparison  = group_test
+  ))
 }
 
-return(list(test = res_stats, plot = density_plot))
-
-}
