@@ -151,7 +151,12 @@ For more than two groups (n > 2), uses either one-way ANOVA with Tukey’s HSD p
 
 
 ```r
-TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_column = "group")
+density_plot <- TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_column = "group")
+
+density_plot$test
+density_plot$variance
+density_plot$normality
+density_plot$plot
 ```
 
 ![Density](plots/density.png)
