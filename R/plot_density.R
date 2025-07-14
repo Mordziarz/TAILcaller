@@ -1,68 +1,61 @@
-#' Plot Density of Poly(A) Tail Lengths with Summary Statistics
-#'
-#' This function generates a density plot of poly(A) tail length distributions  
-#' for each sample group, and optionally overlays group-wise mean or median  
-#' lines. It also performs an appropriate nonparametric test (Wilcoxon or  
-#' Kruskal–Wallis) based on the number of groups.
-#'
-#' @param polyA_table A data frame containing per-read poly(A) tail lengths,  
-#'   as produced by \code{\link{get_gene_id}()}. Must include columns  
-#'   \code{polyA_length} (numeric), the specified \code{grouping_column}, and  
-#'   \code{sample_name}.
-#' @param stats A character string selecting the summary statistic for vertical  
-#'   lines: \code{"median"} or \code{"mean"}. Lines are drawn at each group’s  
-#'   median or mean poly(A) length.
-#' @param grouping_column A character string naming the column in  
-#'   \code{polyA_table} that defines sample groups. Used for color mapping,  
-#'   density grouping, and statistical testing.
-#'
-#' @return A list with components:  
-#'   \describe{  
-#'     \item{wilcox_test}{The result of a Wilcoxon rank–sum test (two groups)  
-#'       or Kruskal–Wallis test (more than two groups), or a message if testing  
-#'       is not possible.}  
-#'     \item{plot}{A \code{ggplot} object showing the density curves and dashed  
-#'       lines at group means or medians.}  
-#'   }
-#'
-#' @export
-#'
-#' @details  
-#' The function performs these steps:  
-#' \itemize{  
-#'   \item Validates that \code{polyA_table}, \code{stats}, and required columns  
-#'     exist.  
-#'   \item Computes the 99th percentile of \code{polyA_length} to set the x-axis  
-#'     limit.  
-#'   \item Plots density curves (normalized) for each group using  
-#'     \code{geom_density()} and \code{stat_density()}.  
-#'   \item Overlays dashed vertical lines at group-specific means or medians,  
-#'     computed via \code{dplyr::summarise()} when \code{stats} is  
-#'     \code{"mean"} or \code{"median"}.  
-#'   \item Determines the number of unique groups:  
-#'     \describe{  
-#'       \item{n = 1}{Returns a message that testing cannot be performed.}  
-#'       \item{n = 2}{Performs a Wilcoxon rank–sum test.}  
-#'       \item{n > 2}{Performs a Kruskal–Wallis test.}  
-#'     }  
-#' }
-#'
-#' @section Statistical Testing:  
-#' Uses \code{wilcox.test()} for two groups and \code{kruskal.test()} for more  
-#' than two groups. If the grouping column is missing or contains only one level,  
-#' an explanatory message is returned instead of a test result.
-#'
-#' @seealso  
-#' \code{\link{get_gene_id}} for preparing \code{polyA_table};  
-#' \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}} for summary stats;  
-#' \code{\link[ggplot2]{geom_density}}, \code{\link[ggplot2]{geom_vline}} for plotting;  
-#' \code{\link[stats]{wilcox.test}}, \code{\link[stats]{kruskal.test}} for tests.
-#'
-#' @importFrom ggplot2 ggplot aes geom_density stat_density geom_vline labs theme_bw coord_cartesian
-#' @importFrom rlang sym
-#' @importFrom dplyr group_by summarise
-#' @importFrom stats quantile median wilcox.test kruskal.test
-#' @importFrom base stop missing unique nrow
+#’ Plot Density of Poly(A) Tail Lengths with Summary Statistics and Group Comparisons
+#’
+#’ Generates a normalized density plot of poly(A) tail length distributions for each sample group, optionally overlays group‐specific mean or median lines, and conducts appropriate group‐comparison tests (t-test or Wilcoxon for two groups; ANOVA or Kruskal–Wallis plus post-hoc for more than two).
+#’
+#’ @param polyA_table Data frame of per‐read poly(A) tail lengths with at least these columns:
+#’ \itemize{
+#’ \item{\code{polyA_length} (numeric)}{—Tail length of each read.}
+#’ \item{\code{sample_name} (character or factor)}{—Identifier for each sample.}
+#’ \item{\code{<grouping_column>} (character or factor)}{—Grouping factor for comparisons.}
+#’ }
+#’ @param stats Character; summary statistic for vertical reference lines. Must be \code{"median"} or \code{"mean"}.
+#’ @param grouping_column Character; name of the column in \code{polyA_table} to use for grouping, density coloring, and tests.
+#’
+#’ @return A named list with components:
+#’ \describe{
+#’ \item{\code{plot}}{A \code{ggplot} object showing density curves per group with dashed lines at group means or medians.}
+#’ \item{\code{normality}}{Data frame of Shapiro–Wilk (if n ≤ 5000) or Lilliefors (if n > 5000) p-values per group.}
+#’ \item{\code{variance}}{Result of Levene’s test for homogeneity of variance, or \code{NULL} if only one group.}
+#’ \item{\code{test}}{For two groups, a t-test or Wilcoxon rank-sum test; for more than two, ANOVA + Tukey HSD or Kruskal–Wallis + Dunn’s test; or a message if only one group.}
+#’ }
+#’
+#’ @details
+#’ The function performs these steps:
+#’ \itemize{
+#’ \item Validates that \code{polyA_table}, \code{stats}, and required columns exist.
+#’ \item Computes the 99th percentile of \code{polyA_length} to set the x‐axis limit.
+#’ \item Plots normalized density curves per group with \code{geom_density()} and \code{stat_density()}.
+#’ \item Adds dashed vertical lines at group means or medians using \code{geom_vline()}.
+#’ \item Tests normality per group (Shapiro–Wilk or Lilliefors) and homogeneity of variance (Levene’s test).
+#’ \item Determines number of groups (\code{ngroups}):
+#’ \describe{
+#’ \item{\code{ngroups < 2}}{Returns a message; no comparisons.}
+#’ \item{\code{ngroups == 2}}{If normality and equal variances hold, performs two-sample t-test; otherwise Wilcoxon test.}
+#’ \item{\code{ngroups > 2}}{If assumptions hold, performs one-way ANOVA with Tukey HSD post-hoc; otherwise Kruskal–Wallis with Dunn’s test.}
+#’ }
+#’ }
+#’
+#’ @section Statistical Tests:
+#’ \itemize{
+#’ \item Two groups: \code{t.test()} or \code{wilcox.test()}.
+#’ \item More than two: \code{aov()} + \code{TukeyHSD()} or \code{kruskal.test()} + \code{dunn.test()}.
+#’ }
+#’
+#’ @seealso
+#’ \code{\link{get_gene_id}} for generating \code{polyA_table};
+#’ \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}} for summary stats;
+#’ \code{\link[ggplot2]{geom_density}}, \code{\link[ggplot2]{geom_vline}};
+#’ \code{\link[stats]{shapiro.test}}, \code{\link[nortest]{lillie.test}}, \code{\link[car]{leveneTest}}, \code{\link[stats]{t.test}}, \code{\link[stats]{wilcox.test}}, \code{\link[stats]{aov}}, \code{\link[stats]{TukeyHSD}}, \code{\link[stats]{kruskal.test}};
+#’ \code{\link[dunn.test]{dunn.test}}.
+#’
+#’ @importFrom ggplot2 ggplot aes geom_density stat_density geom_vline labs theme_bw coord_cartesian
+#’ @importFrom rlang sym
+#’ @importFrom dplyr group_by summarise n_distinct n
+#’ @importFrom stats quantile median t.test wilcox.test aov TukeyHSD kruskal.test
+#’ @importFrom nortest lillie.test
+#’ @importFrom car leveneTest
+#’ @importFrom dunn.test dunn.test
+#’ @export
 
 plot_density <- function(polyA_table=get_gene_id_out,stats="median",grouping_column="group"){
   
