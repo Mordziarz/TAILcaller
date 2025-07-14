@@ -67,7 +67,8 @@ samples_table <- data.frame(bam_path = c(bamfile1,bamfile2,bamfile3,bamfile4,bam
                             sample_name = c("condition1.1","condition1.2","condition1.3","condition1.4","condition2.1","condition2.2","condition2.3","condition2.4"),
                             group = c("condition1","condition1","condition1","condition1","condition2","condition2","condition2","condition2"))
 
-TAILcaller::get_polyA(samples_table = samples_table)
+
+get_polyA_out <- TAILcaller::get_polyA(samples_table = samples_table)
 
 ```
 
@@ -86,7 +87,10 @@ gtf <- as.data.frame(gtf)
 ```
 
 ```r
-TAILcaller::get_gene_id(polyA_table=tabela,gtf_file = gtf,transcript_column_gtf = "transcript_id",gene_column_gtf = "gene_id")
+get_gene_id_out <- TAILcaller::get_gene_id(polyA_table=get_polyA_out,
+                                            gtf_file = gtf,
+                                            transcript_column_gtf = "transcript_id",
+                                            gene_column_gtf = "gene_id")
 ```
 
 # Calculation of basic statistics and counting molecules with polyA tails
@@ -94,7 +98,9 @@ TAILcaller::get_gene_id(polyA_table=tabela,gtf_file = gtf,transcript_column_gtf 
 The count_molecules function allows counting the number of molecules (at the transcript level, which_level = column with transcripts, or at the gene level, which_level = column with genes) in groups (grouping_factor = "group").
 
 ```r
-TAILcaller::count_molecules(polyA_table = get_gene_id_out,grouping_factor="group",which_level="transcript_id")
+count_molecules_out <- TAILcaller::count_molecules(polyA_table = get_gene_id_out,
+                                                    grouping_factor="group",
+                                                    which_level="transcript_id")
 ```
 
 # Calculation of statistics
@@ -166,19 +172,23 @@ TAILcaller::PCA_polyA(get_matrix_out = get_matrix_out,samples_table = samples_ta
 The user can generate a heatmap based on an interval matrix (select = "base") or a normalized matrix (based on percentages, select = "normalized"), which are created within the polyA_heatmap function. Additionally, it is possible to perform clustering (phylogenetic tree) based on the heatmap.
 
 ```r
-res <- TAILcaller::polyA_heatmap(polyA_table = polyA_table,grouping_factor = "sample_name",frame = 10,select="base")
+polyA_heatmap_out <- TAILcaller::polyA_heatmap(polyA_table = get_polyA_out,
+                                    grouping_factor = "sample_name",
+                                    frame = 10,
+                                    select="base",
+                                    )
 
-res$matrix
+polyA_heatmap_out$matrix
 ```
 
 ```r
-res$heatmap
+polyA_heatmap_out$heatmap
 ```
 
 ![heatmap](plots/heatmap_polyA.png)
 
 ```r
-res$tree
+polyA_heatmap_out$tree
 ```
 
 ![tree](plots/tree_polyA.png)
