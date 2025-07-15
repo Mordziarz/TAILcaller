@@ -110,11 +110,21 @@ The calculate_statistics function performs the Wilcoxon test, p-value adjustment
 ```r
 TAILcaller::calculate_statistics(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "condition1",treated_group = "condition2",padj_method="fdr")
 ```
+If you want the function to check for normality of distribution and homogeneity of variances for each gene/transcript, and then perform a test for n=2, use:
+```r
+TAILcaller::calculate_statistics_n2(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "condition1",treated_group = "condition2",padj_method="fdr")
+```
 
 For n > 2, the calculate_kruskal_polyA() function has been prepared.
 
 ```r
 TAILcaller::calculate_kruskal_polyA(polyA_table = get_gene_id_out,grouping_factor = "sample_name",which_level = "gene_id",padj_method="fdr")
+```
+
+If you want the function to check for normality of distribution and homogeneity of variances for each gene/transcript, and then perform a test for n>2, use:
+
+```r
+TAILcaller::calculate_polyA_stat_n3(polyA_table = get_gene_id_out,grouping_factor = "sample_name",which_level = "gene_id",padj_method="fdr")
 ```
 
 # Volcano plot
