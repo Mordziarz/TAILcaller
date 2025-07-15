@@ -141,68 +141,97 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
 
 }
 
-  normality <- polyA_table %>%
-    dplyr::group_by(!!rlang::sym(grouping_column)) %>%
-    dplyr::summarise(
-      n       = dplyr::n(),
-      p_value = if (n() <= 5000) {
-        stats::shapiro.test(polyA_length)$p.value
-      } else {
-        nortest::lillie.test(polyA_length)$p.value
-      }
-    )
+  ngroups <- dplyr::n_distinct(polyA_table[[grouping_column]])
 
-  ngroups  <- dplyr::n_distinct(polyA_table[[grouping_column]])
-  variance <- if (ngroups >= 2) {
-    car::leveneTest(as.formula(paste0("polyA_length ~ ", grouping_column)),
-                    data = polyA_table)
-  } else {
-    NULL
-  }
+  group_counts <- polyA_table %>%
+    dplyr::group_by(!!rlang::sym(grouping_column)) %>%
+    dplyr::summarise(count = dplyr::n(), .groups = 'drop')
+
+  force_non_parametric <- any(group_counts$count < 3)
+
+  normality <- NULL
+  levene_res <- NULL
+  group_test <- NULL
 
   if (ngroups < 2) {
     group_test <- "Only one group; no comparison performed."
-  } else if (ngroups == 2) {
-    use_t <- all(normality$p_value > 0.05) &&
-             !is.null(variance) && variance[["Pr(>F)"]][1] > 0.05
-    group_test <- if (use_t) {
-      stats::t.test(as.formula(paste0("polyA_length ~ ", grouping_column)),
-                    data = polyA_table)
-    } else {
-      stats::wilcox.test(as.formula(paste0("polyA_length ~ ", grouping_column)),
-                         data = polyA_table)
-    }
   } else {
-    if (all(normality$p_value > 0.05)) {
-      if (!is.null(variance) && variance[["Pr(>F)"]][1] > 0.05) {
-        aov_res   <- stats::aov(as.formula(paste0("polyA_length ~ ", grouping_column)),
-                                data = polyA_table)
-        anova_res <- summary(aov_res)
-        tukey_res <- stats::TukeyHSD(aov_res)
-        group_test <- list(anova = anova_res, tukey = tukey_res)
+    if (!force_non_parametric) {
+      normality <- polyA_table %>%
+        dplyr::group_by(!!rlang::sym(grouping_column)) %>%
+        dplyr::summarise(
+          n = dplyr::n(),
+          p_value = if (n() <= 5000) {
+            stats::shapiro.test(polyA_length)$p.value
+          } else {
+            nortest::lillie.test(polyA_length)$p.value
+          },
+          .groups = 'drop'
+        )
+
+      if (all(group_counts$count >= 2)) {
+        levene_res <- tryCatch({
+          car::leveneTest(
+            as.formula(paste0("polyA_length ~ ", grouping_column)),
+            data = polyA_table,
+            center = median 
+          )
+        }, error = function(e) {
+          warning(paste0("Levene's test failed: ", e$message, ". Proceeding with non-parametric test."))
+          NULL 
+        })
       } else {
-        welch_res <- stats::oneway.test(as.formula(paste0("polyA_length ~ ", grouping_column)),
-                                        data = polyA_table,
-                                        var.equal = FALSE)
-        gh_res    <- rstatix::games_howell_test(polyA_table,
-                                                polyA_length ~ !!rlang::sym(grouping_column))
-        group_test <- list(welch = welch_res, games_howell = gh_res)
+        levene_res <- NULL
       }
-    } else {
-      kruskal_res <- stats::kruskal.test(as.formula(paste0("polyA_length ~ ", grouping_column)),
-                                         data = polyA_table)
-      dunn_res    <- dunn.test::dunn.test(x = polyA_table$polyA_length,
-                                          g = polyA_table[[grouping_column]],
-                                          method = "bonferroni")
-      group_test <- list(kruskal = kruskal_res, dunn = dunn_res)
+    }
+
+    if (ngroups == 2) {
+      if (force_non_parametric ||
+          !all(normality$p_value > 0.05, na.rm = TRUE) || 
+          is.null(levene_res) || levene_res[["Pr(>F)"]][1] <= 0.05) { 
+        group_test <- stats::wilcox.test(
+          as.formula(paste0("polyA_length ~ ", grouping_column)),
+          data = polyA_table
+        )
+      } else {
+        group_test <- stats::t.test(
+          as.formula(paste0("polyA_length ~ ", grouping_column)),
+          data = polyA_table,
+          var.equal = TRUE
+        )
+      }
+    } else { 
+      if (force_non_parametric ||
+          !all(normality$p_value > 0.05, na.rm = TRUE) || 
+          is.null(levene_res) || levene_res[["Pr(>F)"]][1] <= 0.05) { 
+        kruskal_res <- stats::kruskal.test(
+          as.formula(paste0("polyA_length ~ ", grouping_column)),
+          data = polyA_table
+        )
+        dunn_res <- dunn.test::dunn.test(
+          x = polyA_table$polyA_length,
+          g = polyA_table[[grouping_column]],
+          method = "bonferroni",
+          altp = TRUE 
+        )
+        group_test <- list(kruskal = kruskal_res, dunn = dunn_res)
+      } else {
+        aov_res <- stats::aov(
+          as.formula(paste0("polyA_length ~ ", grouping_column)),
+          data = polyA_table
+        )
+        anova_sum <- summary(aov_res)
+        tukey_res <- stats::TukeyHSD(aov_res)
+        group_test <- list(anova_summary = anova_sum, tukey_hsd = tukey_res)
+      }
     }
   }
 
   return(list(
-    plot      = density_plot,
-    normality = normality,
-    variance  = variance,
-    test      = group_test
+    plot = density_plot,
+    normality = normality, 
+    variance = levene_res, 
+    test = group_test
   ))
 }
 
