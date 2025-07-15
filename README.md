@@ -143,12 +143,25 @@ TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out,
 
 # Density plot 
 
-Generates a normalized density plot of per-read poly(A) tail length distributions and overlays group-specific summary lines. Supports either the median (stats = "median") or the mean (stats = "mean"). Automatically performs a global nonparametric test:
+The plot_density function generates a normalized density plot of single-read poly(A) tail length distributions, overlaying group-specific reference lines. These lines can represent either the median (stats = "median") or the mean (stats = "mean") poly(A) tail length for each group, allowing for quick visualization of key summary statistics.
 
-For two groups (n = 2), uses either a two-sample t-test (if normality and equal variances hold) or a Wilcoxon rank-sum test.
+A core feature of the function is its automated selection of the appropriate statistical test for group comparisons. This selection is based on the number of groups and whether the assumptions for parametric tests (normality of distribution and homogeneity of variances) are met:
 
-For more than two groups (n > 2), uses either one-way ANOVA with Tukey’s HSD post-hoc or a Kruskal–Wallis test with Dunn’s multiple comparisons.
+For two groups (N = 2):
 
+    If data in both groups exhibit a normal distribution and have homogeneous variances, the function performs a two-sample Student's t-test.
+
+    Otherwise (i.e., non-normality, unequal variances, or fewer than 3 observations in any group), a Wilcoxon rank-sum test (Mann-Whitney U test) is conducted.
+
+For more than two groups (N > 2):
+
+    If data in all groups show a normal distribution and have homogeneous variances, the function applies a one-way Analysis of Variance (ANOVA), followed by a Tukey's HSD post-hoc test for pairwise comparisons.
+
+    If normality is maintained, but variances are unequal, Welch's ANOVA is performed.
+
+    Otherwise (i.e., non-normality, or fewer than 3 observations in any group), a Kruskal-Wallis test is executed, coupled with Dunn's multiple comparisons (using Bonferroni correction).
+
+This approach ensures that the statistical analysis is always appropriate for the data's characteristics, leading to reliable results, even when faced with common biological data challenges like skewness or small sample sizes in certain groups.
 
 ```r
 density_plot <- TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_column = "group")
