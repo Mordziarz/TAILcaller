@@ -3,98 +3,101 @@
 #' Generates a normalized density plot of poly(A) tail length distributions for each sample group,
 #' overlays group-specific mean or median reference lines, and conducts appropriate group-comparison tests:
 #' \itemize{
-#'   \item \strong{Two groups}: Student's t-test (if normality and equal variances), Welch's t-test (if normality, unequal variances), or Wilcoxon rank-sum test.
-#'   \item \strong{More than two groups}: One-way ANOVA + Tukey HSD (if normality and equal variances), Welch's ANOVA (if normality, unequal variances), or Kruskal–Wallis + Dunn's test.
+#'   \item \strong{Two groups}: Student's t-test (if normality and equal variances), or Wilcoxon rank-sum test.
+#'   \item \strong{More than two groups}: One-way ANOVA + Tukey HSD (if normality and equal variances), or Kruskal–Wallis + Dunn's test.
 #' }
+#' This function automatically determines the most suitable test based on data characteristics (number of groups, normality, homogeneity of variances) and gracefully handles cases with very few observations per group.
 #'
 #' @param polyA_table A \code{data.frame} with per-read poly(A) tail lengths. Must contain:
 #'   \describe{
 #'     \item{\code{polyA_length} (numeric)}{Tail length of each read.}
-#'     \item{\code{sample_name} (character or factor)}{Sample identifier (checked but not directly used for plot/tests in this version).}
-#'     \item{\code{<grouping_column>} (character or factor)}{Grouping variable for comparison.}
+#'     \item{\code{sample_name} (character or factor)}{Sample identifier (checked but not directly used for plotting or statistical tests in this version).}
+#'     \item{\code{<grouping_column>} (character or factor)}{Grouping variable for comparison, e.g., experimental condition.}
 #'   }
-#' @param stats Character; summary statistic for vertical reference lines. One of \code{"median"} or \code{"mean"}. Defaults to \code{"median"}.
-#' @param grouping_column Character; name of the column in \code{polyA_table} to use for grouping, coloring, and statistical tests. Defaults to \code{"group"}.
+#' @param stats Character; summary statistic for vertical reference lines on the plot. Must be one of \code{"median"} or \code{"mean"}. Defaults to \code{"median"}.
+#' @param grouping_column Character; name of the column in \code{polyA_table} to use for defining groups, coloring the density curves, and performing statistical comparisons. Defaults to \code{"group"}.
 #'
-#' @return A named \code{list} with components:
+#' @return A named \code{list} with the following components:
 #'   \describe{
-#'     \item{\code{plot}}{A \code{ggplot} object showing normalized density curves per group with dashed mean/median lines.}
-#'     \item{\code{normality}}{A \code{data.frame} of per-group normality test p-values (Shapiro–Wilk if n ≤ 5000, Lilliefors if n > 5000) and group sizes (\code{n}).}
-#'     \item{\code{variance}}{Result of Levene’s test for homogeneity of variance (from \code{car::leveneTest}) or \code{NULL} if fewer than two groups or groups lack sufficient observations (min 2 per group).}
+#'     \item{\code{plot}}{A \code{ggplot} object displaying normalized density curves for each group, with dashed lines indicating group-specific means or medians.}
+#'     \item{\code{normality}}{A \code{data.frame} containing per-group normality test p-values (Shapiro–Wilk for n ≤ 5000, Lilliefors for n > 5000) and group sizes (\code{n}). Returns \code{NULL} if any group has fewer than 3 observations (forcing a non-parametric test).}
+#'     \item{\code{variance}}{Result of Levene’s test for homogeneity of variance (a \code{data.frame} from \code{car::leveneTest}). Returns \code{NULL} if fewer than two groups, if any group has fewer than 2 observations, or if a non-parametric test was forced due to small group sizes.}
 #'     \item{\code{test}}{Statistical comparison results, which can be:
 #'       \itemize{
-#'         \item A \code{character} message if fewer than two groups ("Only one group; no comparison performed.").
-#'         \item For two groups: a \code{htest} object from \code{stats::t.test()} or \code{stats::wilcox.test()}.
-#'         \item For more than two groups: a \code{list} containing \code{anova} and \code{tukey} results (from \code{stats::aov()} and \code{stats::TukeyHSD()}) for parametric ANOVA, or \code{kruskal} and \code{dunn} results (from \code{stats::kruskal.test()} and \code{dunn.test::dunn.test()}) for non-parametric tests, or \code{oneway.test} object for Welch's ANOVA.
+#'         \item A \code{character} message ("Only one group; no comparison performed.") if \code{ngroups < 2}.
+#'         \item For two groups: a \code{htest} object from \code{stats::t.test()} (Student's t-test) or \code{stats::wilcox.test()} (Wilcoxon rank-sum test).
+#'         \item For more than two groups: a \code{list} containing \code{anova_summary} (from \code{summary(stats::aov())}) and \code{tukey_hsd} (from \code{stats::TukeyHSD()}) for parametric ANOVA, or a \code{list} containing \code{kruskal} (from \code{stats::kruskal.test()}) and \code{dunn} (from \code{dunn.test::dunn.test()}) for non-parametric tests.
 #'       }
 #'     }
 #'   }
 #'
 #' @details
-#' The function executes the following steps:
+#' The function operates through the following steps:
 #'   \enumerate{
-#'     \item Validates inputs and required columns: \code{polyA_length}, \code{sample_name}, and the specified \code{grouping_column}.
-#'     \item Computes the 99th percentile of \code{polyA_length} to set a reasonable x-axis limit for the density plot, preventing outliers from stretching the plot excessively.
-#'     \item Generates a \code{ggplot2} density plot:
+#'     \item **Input Validation**: Ensures that `polyA_table` is defined and contains the necessary columns (`polyA_length`, `sample_name`, and the specified `grouping_column`). Also validates `stats` argument.
+#'     \item **X-axis Limit Calculation**: Determines the 99th percentile of `polyA_length` to set a suitable upper limit for the plot's x-axis, preventing extreme outliers from distorting the visual representation.
+#'     \item **Density Plot Generation**:
 #'       \itemize{
-#'         \item Plots normalized density curves for each group using \code{geom_density()} and \code{stat_density()}.
-#'         \item Adds dashed vertical lines at group means or medians (as specified by \code{stats}) using \code{geom_vline()}.
+#'         \item Creates normalized density curves for each group using `ggplot2::geom_density()`.
+#'         \item Overlays dashed vertical lines representing either the mean or median (based on the `stats` parameter) for each group using `ggplot2::geom_vline()`.
 #'       }
-#'     \item Performs per-group normality tests (Shapiro–Wilk for n ≤ 5000, Lilliefors for n > 5000) to assess the normal distribution assumption.
-#'     \item Conducts Levene’s test for homogeneity of variance across groups using \code{car::leveneTest(center = median)} (more robust to non-normality than the mean).
-#'     \item Determines the number of distinct groups (\code{ngroups}) in the \code{grouping_column} and selects the appropriate statistical test:
+#'     \item **Group Size Check and Test Selection Logic**:
 #'       \itemize{
-#'         \item \code{ngroups < 2}: No comparison is performed, and a message is returned.
+#'         \item Calculates the number of unique groups (`ngroups`) and counts observations per group.
+#'         \item If **any group has fewer than 3 observations**, or if Levene's test cannot be performed (e.g., fewer than 2 observations in any group), the function automatically defaults to a **non-parametric test path** (`force_non_parametric` is set to `TRUE`). In such cases, normality and homogeneity of variance tests are skipped, and their results (in `normality` and `variance` components of the return list) will be `NULL`.
+#'       }
+#'     \item **Statistical Test Execution**:
+#'       \itemize{
+#'         \item \code{ngroups < 2}: No statistical comparison is performed.
 #'         \item \code{ngroups == 2}:
 #'           \itemize{
-#'             \item \strong{Student's t-test}: If both groups pass normality tests (\code{p > 0.05}) and Levene’s test (\code{p > 0.05}).
-#'             \item \strong{Welch's t-test}: If both groups pass normality tests, but Levene’s test fails (\code{p <= 0.05}). This test does not assume equal variances.
-#'             \item \strong{Wilcoxon rank-sum test}: If normality assumption is violated for any group.
+#'             \item \strong{Student's t-test}: Chosen if `force_non_parametric` is `FALSE`, all groups pass normality tests (`p > 0.05`), and Levene’s test for homogeneity of variance passes (`p > 0.05`).
+#'             \item \strong{Wilcoxon rank-sum test}: Performed if `force_non_parametric` is `TRUE`, or if normality/homogeneity of variance assumptions are violated or cannot be reliably assessed.
 #'           }
 #'         \item \code{ngroups > 2}:
 #'           \itemize{
-#'             \item \strong{One-way ANOVA + Tukey HSD}: If all groups pass normality tests and Levene’s test passes.
-#'             \item \strong{Welch's ANOVA}: If all groups pass normality tests, but Levene’s test fails. Post-hoc comparisons for Welch's ANOVA (e.g., Games-Howell) are not included in this function but should be considered if this test is chosen.
-#'             \item \strong{Kruskal–Wallis + Dunn’s test}: If normality assumption is violated for any group, or if Levene's test could not be performed (e.g., due to insufficient observations per group for variance calculation).
+#'             \item \strong{One-way ANOVA + Tukey HSD}: Selected if `force_non_parametric` is `FALSE`, all groups pass normality tests (`p > 0.05`), and Levene’s test for homogeneity of variance passes (`p > 0.05`).
+#'             \item \strong{Kruskal–Wallis + Dunn’s test}: Performed if `force_non_parametric` is `TRUE`, or if normality/homogeneity of variance assumptions are violated or cannot be reliably assessed.
 #'           }
 #'       }
 #'   \end{enumerate}
 #'
 #' @section Statistical Tests Used:
 #'   \itemize{
-#'     \item \strong{Normality}: \code{stats::shapiro.test()} (for N <= 5000) or \code{nortest::lillie.test()} (for N > 5000).
-#'     \item \strong{Homogeneity of Variance}: \code{car::leveneTest()}.
+#'     \item \strong{Normality}: `stats::shapiro.test()` (for N <= 5000) or `nortest::lillie.test()` (for N > 5000). These are skipped if `force_non_parametric` is `TRUE`.
+#'     \item \strong{Homogeneity of Variance}: `car::leveneTest(center = median)`. This is skipped if `force_non_parametric` is `TRUE`.
 #'     \item \strong{Two groups}:
 #'       \itemize{
-#'         \item Parametric: \code{stats::t.test()} (Student's and Welch's variants).
-#'         \item Non-parametric: \code{stats::wilcox.test()}.
+#'         \item Parametric: `stats::t.test()` (Student's variant with `var.equal = TRUE`).
+#'         \item Non-parametric: `stats::wilcox.test()`.
 #'       }
 #'     \item \strong{More than two groups}:
 #'       \itemize{
-#'         \item Parametric: \code{stats::aov()} followed by \code{stats::TukeyHSD()} (for equal variances), or \code{stats::oneway.test()} with \code{var.equal = FALSE} (Welch's ANOVA for unequal variances).
-#'         \item Non-parametric: \code{stats::kruskal.test()} followed by \code{dunn.test::dunn.test()}.
+#'         \item Parametric: `stats::aov()` followed by `stats::TukeyHSD()`.
+#'         \item Non-parametric: `stats::kruskal.test()` followed by `dunn.test::dunn.test()`.
 #'       }
 #'   }
 #'
 #' @seealso
-#'   \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}}, \code{\link[dplyr]{n_distinct}}, \code{\link[dplyr]{n}} for data manipulation;
-#'   \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{geom_density}}, \code{\link[ggplot2]{stat_density}}, \code{\link[ggplot2]{geom_vline}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{theme_bw}}, \code{\link[ggplot2]{coord_cartesian}} for plotting;
-#'   \code{\link[stats]{quantile}}, \code{\link[stats]{median}}, \code{\link[base]{mean}}, \code{\link[stats]{shapiro.test}}, \code{\link[stats]{t.test}}, \code{\link[stats]{wilcox.test}}, \code{\link[stats]{aov}}, \code{\link[stats]{TukeyHSD}}, \code{\link[stats]{kruskal.test}}, \code{\link[stats]{oneway.test}} for statistical functions;
-#'   \code{\link[nortest]{lillie.test}} for normality testing;
-#'   \code{\link[car]{leveneTest}} for homogeneity of variance;
-#'   \code{\link[dunn.test]{dunn.test}} for post-hoc non-parametric tests;
-#'   \code{\link[rlang]{sym}} for tidy evaluation.
+#'   `\link[dplyr]{group_by}`, `\link[dplyr]{summarise}`, `\link[dplyr]{n_distinct}`, `\link[dplyr]{n}` for data manipulation;
+#'   `\link[ggplot2]{ggplot}`, `\link[ggplot2]{aes}`, `\link[ggplot2]{geom_density}`, `\link[ggplot2]{stat_density}`, `\link[ggplot2]{geom_vline}`, `\link[ggplot2]{labs}`, `\link[ggplot2]{theme_bw}`, `\link[ggplot2]{coord_cartesian}` for plotting;
+#'   `\link[stats]{quantile}`, `\link[stats]{median}`, `\link[base]{mean}`, `\link[stats]{shapiro.test}`, `\link[stats]{t.test}`, `\link[stats]{wilcox.test}`, `\link[stats]{aov}`, `\link[stats]{TukeyHSD}`, `\link[stats]{kruskal.test}` for statistical functions;
+#'   `\link[nortest]{lillie.test}` for normality testing;
+#'   `\link[car]{leveneTest}` for homogeneity of variance;
+#'   `\link[dunn.test]{dunn.test}` for post-hoc non-parametric tests;
+#'   `\link[rlang]{sym}` for tidy evaluation.
 #'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom ggplot2 ggplot aes geom_density stat_density geom_vline labs theme_bw coord_cartesian
 #' @importFrom rlang sym
 #' @importFrom dplyr group_by summarise n_distinct n
-#' @importFrom stats quantile median mean t.test wilcox.test aov TukeyHSD kruskal.test oneway.test
+#' @importFrom stats quantile median mean t.test wilcox.test aov TukeyHSD kruskal.test
 #' @importFrom nortest lillie.test
 #' @importFrom car leveneTest
 #' @importFrom dunn.test dunn.test
 #' @export
+
 
 plot_density <- function(polyA_table=get_gene_id_out,stats="median",grouping_column="group"){
   
