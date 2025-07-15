@@ -7,11 +7,11 @@
 #' @export
 #'
 
-calculate_polyA_stat_n3 <- function(polyA_table    = get_gene_id_out, grouping_column= "group", which_level    = "gene_id",padj_method    = "fdr") {
+calculate_polyA_stat_n3 <- function(polyA_table    = get_gene_id_out, grouping_factor= "group", which_level    = "gene_id",padj_method    = "fdr") {
   if (missing(polyA_table)) {
     stop("'polyA_table' must be defined.")
   }
-  required_cols <- c("polyA_length", grouping_column, which_level)
+  required_cols <- c("polyA_length", grouping_factor, which_level)
   if (!all(required_cols %in% colnames(polyA_table))) {
     stop(sprintf(
       "polyA_table must contain columns: %s",
@@ -36,7 +36,7 @@ calculate_polyA_stat_n3 <- function(polyA_table    = get_gene_id_out, grouping_c
     unit_id <- units[i]
     subdf <- polyA_table[polyA_table[[which_level]] == unit_id, , drop=FALSE]
     n_obs <- nrow(subdf)
-    groups_present <- unique(subdf[[grouping_column]])
+    groups_present <- unique(subdf[[grouping_factor]])
     n_groups <- length(groups_present)
     
     p_val <- NA
@@ -50,14 +50,14 @@ calculate_polyA_stat_n3 <- function(polyA_table    = get_gene_id_out, grouping_c
       }
       lev_p <- tryCatch({
         car::leveneTest(
-          as.formula(paste0("polyA_length ~ ", grouping_column)),
+          as.formula(paste0("polyA_length ~ ", grouping_factor)),
           data = subdf
         )[["Pr(>F)"]][1]
       }, error = function(e) NA)
       
       if (n_groups > 2 && !is.na(p_norm) && p_norm > .05 && !is.na(lev_p) && lev_p > .05) {
         aov_res <- stats::aov(
-          as.formula(paste0("polyA_length ~ ", grouping_column)),
+          as.formula(paste0("polyA_length ~ ", grouping_factor)),
           data = subdf
         )
         p_val <- summary(aov_res)[[1]][["Pr(>F)"]][1]
@@ -65,7 +65,7 @@ calculate_polyA_stat_n3 <- function(polyA_table    = get_gene_id_out, grouping_c
       } else {
         p_val <- suppressWarnings(
           stats::kruskal.test(
-            as.formula(paste0("polyA_length ~ ", grouping_column)),
+            as.formula(paste0("polyA_length ~ ", grouping_factor)),
             data = subdf
           )$p.value
         )
