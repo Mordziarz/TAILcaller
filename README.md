@@ -150,6 +150,7 @@ A core feature of the function is its automated selection of the appropriate sta
 For two groups (n = 2):
 
 If data in both groups exhibit a normal distribution and have homogeneous variances, the function performs a two-sample Student's t-test.
+If data in both groups exhibit a normal distribution but have unequal variances, a Welch's t-test is conducted.
 Otherwise (i.e., non-normality, unequal variances, or fewer than 3 observations in any group), a Wilcoxon rank-sum test (Mann-Whitney U test) is conducted.
 
 For more than two groups (n > 2):

@@ -3,7 +3,7 @@
 #' Generates a normalized density plot of poly(A) tail length distributions for each sample group,
 #' overlays group-specific mean or median reference lines, and conducts appropriate group-comparison tests:
 #' \itemize{
-#'   \item \strong{Two groups}: Student's t-test (if normality and equal variances), or Wilcoxon rank-sum test.
+#'   \item \strong{Two groups}: Student's t-test (if normality and equal variances), \strong{Welch's t-test} (if normality and unequal variances), or Wilcoxon rank-sum test.
 #'   \item \strong{More than two groups}: One-way ANOVA + Tukey HSD (if normality and equal variances), or Kruskal–Wallis + Dunn's test.
 #' }
 #' This function automatically determines the most suitable test based on data characteristics (number of groups, normality, homogeneity of variances) and gracefully handles cases with very few observations per group.
@@ -25,7 +25,7 @@
 #'     \item{\code{test}}{Statistical comparison results, which can be:
 #'       \itemize{
 #'         \item A \code{character} message ("Only one group; no comparison performed.") if \code{ngroups < 2}.
-#'         \item For two groups: a \code{htest} object from \code{stats::t.test()} (Student's t-test) or \code{stats::wilcox.test()} (Wilcoxon rank-sum test).
+#'         \item For two groups: a \code{htest} object from \code{stats::t.test()} (Student's t-test or Welch's t-test) or \code{stats::wilcox.test()} (Wilcoxon rank-sum test).
 #'         \item For more than two groups: a \code{list} containing \code{anova_summary} (from \code{summary(stats::aov())}) and \code{tukey_hsd} (from \code{stats::TukeyHSD()}) for parametric ANOVA, or a \code{list} containing \code{kruskal} (from \code{stats::kruskal.test()}) and \code{dunn} (from \code{dunn.test::dunn.test()}) for non-parametric tests.
 #'       }
 #'     }
@@ -51,8 +51,9 @@
 #'         \item \code{ngroups < 2}: No statistical comparison is performed.
 #'         \item \code{ngroups == 2}:
 #'           \itemize{
-#'             \item \strong{Student's t-test}: Chosen if `force_non_parametric` is `FALSE`, all groups pass normality tests (`p > 0.05`), and Levene’s test for homogeneity of variance passes (`p > 0.05`).
-#'             \item \strong{Wilcoxon rank-sum test}: Performed if `force_non_parametric` is `TRUE`, or if normality/homogeneity of variance assumptions are violated or cannot be reliably assessed.
+#'             \item \strong{Student's t-test}: Chosen if `force_non_parametric` is `FALSE`, all groups pass normality tests (`p > 0.05`), and Levene’s test for homogeneity of variance passes (`p > 0.05`) using `var.equal = TRUE`.
+#'             \item \strong{Welch's t-test}: Chosen if `force_non_parametric` is `FALSE`, all groups pass normality tests (`p > 0.05`), but Levene’s test for homogeneity of variance fails (`p <= 0.05`) using `var.equal = FALSE`.
+#'             \item \strong{Wilcoxon rank-sum test}: Performed if `force_non_parametric` is `TRUE`, or if normality assumptions are violated or cannot be reliably assessed.
 #'           }
 #'         \item \code{ngroups > 2}:
 #'           \itemize{
@@ -68,7 +69,8 @@
 #'     \item \strong{Homogeneity of Variance}: `car::leveneTest(center = median)`. This is skipped if `force_non_parametric` is `TRUE`.
 #'     \item \strong{Two groups}:
 #'       \itemize{
-#'         \item Parametric: `stats::t.test()` (Student's variant with `var.equal = TRUE`).
+#'         \item Parametric (equal variances): `stats::t.test(var.equal = TRUE)`.
+#'         \item Parametric (unequal variances): `stats::t.test(var.equal = FALSE)` (Welch's t-test).
 #'         \item Non-parametric: `stats::wilcox.test()`.
 #'       }
 #'     \item \strong{More than two groups}:
