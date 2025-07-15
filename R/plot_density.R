@@ -99,7 +99,7 @@
 #' @export
 
 
-plot_density <- function(polyA_table=get_gene_id_out,stats="median",grouping_column="group"){
+plot_density <- function(polyA_table=get_gene_id_out,stats="median",grouping_column="group") {
   
   
   if (missing(polyA_table)) {
@@ -144,7 +144,7 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
 
 }
 
-  ngroups <- dplyr::n_distinct(polyA_table[[grouping_column]])
+ngroups <- dplyr::n_distinct(polyA_table[[grouping_column]])
 
   group_counts <- polyA_table %>%
     dplyr::group_by(!!rlang::sym(grouping_column)) %>%
@@ -189,19 +189,25 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
     }
 
     if (ngroups == 2) {
-      if (force_non_parametric ||
-          !all(normality$p_value > 0.05, na.rm = TRUE) || 
-          is.null(levene_res) || levene_res[["Pr(>F)"]][1] <= 0.05) { 
+      if (force_non_parametric || !all(normality$p_value > 0.05, na.rm = TRUE)) {
         group_test <- stats::wilcox.test(
           as.formula(paste0("polyA_length ~ ", grouping_column)),
           data = polyA_table
         )
       } else {
-        group_test <- stats::t.test(
-          as.formula(paste0("polyA_length ~ ", grouping_column)),
-          data = polyA_table,
-          var.equal = TRUE
-        )
+        if (!is.null(levene_res) && levene_res[["Pr(>F)"]][1] <= 0.05) { 
+          group_test <- stats::t.test(
+            as.formula(paste0("polyA_length ~ ", grouping_column)),
+            data = polyA_table,
+            var.equal = FALSE # Korekta Welcha
+          )
+        } else {
+          group_test <- stats::t.test(
+            as.formula(paste0("polyA_length ~ ", grouping_column)),
+            data = polyA_table,
+            var.equal = TRUE 
+          )
+        }
       }
     } else { 
       if (force_non_parametric ||
@@ -237,5 +243,3 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
     test = group_test
   ))
 }
-
-
