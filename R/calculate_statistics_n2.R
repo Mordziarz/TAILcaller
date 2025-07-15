@@ -35,6 +35,7 @@
 #'     \item{\code{cohen_effect} (character)}{Categorical interpretation of Cohen's d ("small", "medium", "large").}
 #'     \item{\code{padj} (numeric)}{Adjusted p-value.}
 #'     \item{\code{Log2FC} (numeric)}{Log2 Fold Change.}
+#'     \item{\code{test_performed} (character)}{Name of the statistical test performed for the molecule.}
 #'   }
 #'
 #' @details
@@ -49,12 +50,10 @@
 #'     \itemize{
 #'       \item If *both* groups are normally distributed *and* have homogeneous variances, a \strong{Student's t-test} (`var.equal = TRUE`) is conducted.
 #'       \item If *both* groups are normally distributed *but* have unequal variances, a \strong{Welch's t-test} (`var.equal = FALSE`) is conducted.
-#'       \item Otherwise (if either group is non-normal, or Levene's test cannot be performed, or variances are unequal and normality doesn't hold for both), a \strong{Wilcoxon rank-sum test} is conducted.
+#'       \item Otherwise (if either group is non-normal, or fewer than 3 observations for normality test, or Levene's test cannot be performed, or variances are unequal and normality doesn't hold for both), a \strong{Wilcoxon rank-sum test} is conducted.
 #'     \item \strong{Effect Size}: Cohen's d is calculated based on the pooled standard deviation (for cases where it's applicable, primarily for parametric tests, but included for all as a general effect size measure).
 #'     \item \strong{Multiple Comparison Adjustment}: P-values are adjusted using the specified `padj_method`.
 #'   \end{enumerate}
-#'
-#' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats wilcox.test t.test shapiro.test p.adjust sd mean
 #' @importFrom nortest lillie.test
@@ -80,7 +79,7 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
 
   how_molecules <- polyA_table_filtered %>%
     dplyr::distinct(!!rlang::sym(which_level)) %>%
-    as.data.frame() 
+    as.data.frame()
 
   results <- lapply(1:nrow(how_molecules), function(i) {
     molecule <- how_molecules[[which_level]][i]
@@ -92,6 +91,8 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
     n_ctr <- length(ctr_data)
     n_trt <- length(trt_data)
 
+    test_name <- NA
+
     if (n_ctr < 2 || n_trt < 2) {
       return(list(
         p_value = NA,
@@ -100,12 +101,13 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
         fold_change = NA,
         cohen_d = NA,
         cohen_effect = NA,
-        diff_length = NA
+        diff_length = NA,
+        test_performed = "Insufficient data (<2 observations per group)"
       ))
     }
 
     shapiro_or_lillie <- function(x) {
-      if (length(x) >= 3) { 
+      if (length(x) >= 3) {
         if (length(x) <= 5000) {
           suppressWarnings(stats::shapiro.test(x)$p.value)
         } else {
@@ -121,6 +123,7 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
 
     all_normal <- !is.na(normality_ctr_p) && normality_ctr_p > 0.05 &&
                   !is.na(normality_trt_p) && normality_trt_p > 0.05
+
 
     levene_p <- NA
     if (n_ctr >= 2 && n_trt >= 2) {
@@ -147,14 +150,17 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
       p_val <- suppressWarnings(
         stats::t.test(ctr_data, trt_data, var.equal = TRUE)$p.value
       )
+      test_name <- "Student's t-test"
     } else if (all_normal && !homogeneous_variances) {
       p_val <- suppressWarnings(
         stats::t.test(ctr_data, trt_data, var.equal = FALSE)$p.value
       )
+      test_name <- "Welch's t-test"
     } else {
       p_val <- suppressWarnings(
         stats::wilcox.test(ctr_data, trt_data)$p.value
       )
+      test_name <- "Wilcoxon rank-sum test"
     }
 
     mean_ctr <- mean(ctr_data, na.rm = TRUE)
@@ -185,7 +191,8 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
       cohen_effect = ifelse(is.na(cd), NA,
                             ifelse(cd < 0.2, "small",
                                    ifelse(cd < 0.5, "medium", "large"))),
-      diff_length = mean_trt - mean_ctr
+      diff_length = mean_trt - mean_ctr,
+      test_performed = test_name
     )
   })
 
@@ -196,6 +203,7 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
   how_molecules$fold_change <- sapply(results, `[[`, "fold_change")
   how_molecules$cohen_d <- sapply(results, `[[`, "cohen_d")
   how_molecules$cohen_effect <- sapply(results, `[[`, "cohen_effect")
+  how_molecules$test_performed <- sapply(results, `[[`, "test_performed")
 
   valid_p_values_idx <- !is.na(how_molecules$p_value)
   how_molecules$padj <- NA
