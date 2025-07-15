@@ -108,13 +108,13 @@ count_molecules_out <- TAILcaller::count_molecules(polyA_table = get_gene_id_out
 The calculate_statistics function performs the Wilcoxon test, p-value adjustment (FDR), Cohen's d test, and log2 fold change calculation. The function requires a table with polyA tail values. It is possible to calculate statistics for genes if you define polyA_table as the output table from the get_gene_id function. The grouping factor is the column that distinguishes the samples. The which_level argument should be assigned to the column containing transcript or gene identifiers. control_group and treated_group are the names of the groups in "" that correspond to those in the grouping_factor column (defined earlier).
 
 ```r
-TAILcaller::calculate_statistics(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "condition1",treated_group = "condition2")
+TAILcaller::calculate_statistics(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "condition1",treated_group = "condition2",padj_method="fdr")
 ```
 
 For n > 2, the calculate_kruskal_polyA() function has been prepared.
 
 ```r
-TAILcaller::calculate_kruskal_polyA(polyA_table = get_gene_id_out,grouping_factor = "sample_name",which_level = "gene_id")
+TAILcaller::calculate_kruskal_polyA(polyA_table = get_gene_id_out,grouping_factor = "sample_name",which_level = "gene_id",padj_method="fdr")
 ```
 
 # Volcano plot

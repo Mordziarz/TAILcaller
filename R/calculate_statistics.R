@@ -1,21 +1,62 @@
-#' Calculation of statistics and creation of the table
+#' Calculate comparative statistics for polyA lengths between two groups
 #'
-#' @param polyA_table the table created using the get_polyA function.
-#' @param grouping_factor the name of the column in the table that divides the experiment into groups.
-#' @param which_level the name of the column by which the statistics should be grouped, either transcripts or genes.
-#' @param control_group the name of the control group in "".
-#' @param treated_group the name of the treated group in "".
-#' @return a table object.
+#' \code{calculate_statistics} computes per-entity summary and statistical
+#' comparisons of polyA tail lengths between a specified control and treated
+#' group. For each unique entity (e.g., gene or transcript) it:
+#'   1. Counts observations in control and treated groups.
+#'   2. If both groups have ≥2 observations, performs a Wilcoxon rank-sum test.
+#'   3. Calculates group means, fold change, mean difference, Cohen’s d, and
+#'      categorizes effect size.
+#'   4. Adjusts p-values across all entities using the specified method.
+#'
+#' @param polyA_table A \code{data.frame} produced by \code{get_polyA()}, which
+#'   must contain at least the columns \code{"polyA_length"}, the grouping factor,
+#'   and the entity identifier. Defaults to \code{get_gene_id_out}.
+#' @param grouping_factor A string giving the column name in
+#'   \code{polyA_table} that defines group membership (e.g., treatment vs control).
+#'   Default \code{"group"}.
+#' @param which_level A string giving the column name in \code{polyA_table} that
+#'   defines the entity level for aggregation (e.g., \code{"gene_id"} or
+#'   \code{"transcript_id"}). Default \code{"gene_id"}.
+#' @param control_group A string naming the level of \code{grouping_factor} to
+#'   be treated as the control group. Must be provided.
+#' @param treated_group A string naming the level of \code{grouping_factor} to
+#'   be treated as the treated group. Must be provided.
+#' @param padj_method A string specifying the p-value adjustment method passed
+#'   to \code{\link[stats]{p.adjust}} (e.g., \code{"fdr"}, \code{"BH"},
+#'   \code{"bonferroni"}). Default \code{"fdr"}.
+#'
+#' @return A \code{data.frame} with one row per entity and columns:
+#'   \describe{
+#'     \item{<which_level>}{Entity identifier (column name as supplied).}
+#'     \item{p_value}{Raw p-value from the Wilcoxon test or \code{NA} if
+#'       insufficient observations.}
+#'     \item{padj}{Adjusted p-value across all entities.}
+#'     \item{mean_group_ctr}{Mean polyA length in the control group.}
+#'     \item{mean_group_trt}{Mean polyA length in the treated group.}
+#'     \item{diff_length}{Mean difference (treated − control).}
+#'     \item{fold_change}{Ratio of treated mean to control mean.}
+#'     \item{Log2FC}{Log2-transformed fold change.}
+#'     \item{cohen_d}{Cohen’s d effect size.}
+#'     \item{cohen_effect}{Effect size category: \code{"small"},
+#'       \code{"medium"}, or \code{"large"}.}
+#'   }
+#'
+#' @details
+#' - Entities with fewer than two observations in either group receive \code{NA}
+#'   for all statistics.
+#' - Wilcoxon rank-sum test is used to compare nonparametric distributions.
+#' - Fold change is undefined (\code{NA}) if the control mean is zero.
+#' - Cohen’s d is computed using pooled standard deviation.
+#' - P-values are adjusted by \code{\link[stats]{p.adjust}} with
+#'   \code{padj_method}.
+#'
+#' @author Mateusz Mazdziarz
+#'
+#' @importFrom stats wilcox.test p.adjust
 #' @export
-#'
 
-calculate_statistics <- function(
-    polyA_table = get_gene_id_out,
-    grouping_factor = "group",
-    which_level = "gene_id",
-    control_group = NULL,
-    treated_group = NULL
-) {
+calculate_statistics <- function(polyA_table = get_gene_id_out, grouping_factor = "group", which_level = "gene_id", control_group = NULL, treated_group = NULL, padj_method="fdr") {
   if (missing(polyA_table)) stop("'polyA_table' must be defined.")
   if (missing(control_group) | missing(treated_group)) {
     stop("Both 'control_group' and 'treated_group' must be provided.")
@@ -80,7 +121,7 @@ calculate_statistics <- function(
   how_molecules$fold_change <- sapply(results, `[[`, "fold_change")
   how_molecules$cohen_d <- sapply(results, `[[`, "cohen_d")
   how_molecules$cohen_effect <- sapply(results, `[[`, "cohen_effect")
-  how_molecules$padj <- p.adjust(how_molecules$p_value, method = "fdr")
+  how_molecules$padj <- p.adjust(how_molecules$p_value, method = padj_method)
   how_molecules$Log2FC <- log2(how_molecules$fold_change)
   
   message("Processing completed. Time: ", 

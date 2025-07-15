@@ -1,9 +1,53 @@
-calculate_polyA_stat_n3 <- function(
-  polyA_table     = get_gene_id_out,
-  grouping_factor = "group",
-  which_level     = "gene_id",
-  padj_method     = "fdr"
-) {
+#' Calculate per-entity group comparison p-values for polyA lengths
+#'
+#' \code{calculate_polyA_stat_n3} performs, for each unique entity in a 
+#' polyA length table, a hypothesis test comparing distributions of 
+#' \code{polyA_length} across groups. For each entity it:
+#'   1. Checks if there are at least two groups and ≥3 total observations.
+#'   2. Tests normality (Shapiro–Wilk or Lilliefors).
+#'   3. Tests variance homogeneity (Levene’s test) if each group has ≥2 obs.
+#'   4. Chooses one of:
+#'      - One-way ANOVA (normal + homogeneous variances);
+#'      - Welch ANOVA (normal + unequal variances);
+#'      - Kruskal–Wallis (non-normal or insufficient obs).
+#'   5. Records the p-value and test used.
+#'   6. Adjusts all p-values for multiple testing.
+#'
+#' @param polyA_table A \code{data.frame} containing at least the columns 
+#'   \code{"polyA_length"}, the grouping factor, and the entity identifier.
+#'   Defaults to \code{get_gene_id_out}.
+#' @param grouping_factor A string naming the column in \code{polyA_table} 
+#'   that defines groups for comparison. Default \code{"group"}.
+#' @param which_level A string naming the column in \code{polyA_table} 
+#'   that defines the entity (e.g., gene, transcript). Default \code{"gene_id"}.
+#' @param padj_method A string specifying the p-value adjustment method 
+#'   passed to \code{\link[stats]{p.adjust}}. Default \code{"fdr"}.
+#'
+#' @return A \code{data.frame} with one row per entity and columns:
+#'   \describe{
+#'     \item{<which_level>}{Entity identifier (named as supplied).}
+#'     \item{test_used}{The test applied: \code{"ANOVA"}, \code{"Welch ANOVA"}, 
+#'       or \code{"Kruskal–Wallis"}.}
+#'     \item{p_value}{Raw p-value from the chosen test.}
+#'     \item{padj}{Adjusted p-value across all entities.}
+#'   }
+#'
+#' @details
+#' - Entities with fewer than two groups yield \code{NA} p-values.
+#' - Entities with <3 total observations default to Kruskal–Wallis.
+#' - Normality assessed by Shapiro–Wilk for n ≤ 5000, otherwise by Lilliefors.
+#' - Variance homogeneity assessed by Levene’s test when each group has ≥2 obs.
+#' - ANOVA used if normal + homogeneous; Welch ANOVA if normal + heterogeneous; 
+#'   otherwise Kruskal–Wallis.
+#'
+#' @author Mateusz Mazdziarz
+#'
+#' @importFrom stats shapiro.test kruskal.test aov oneway.test p.adjust
+#' @importFrom nortest lillie.test
+#' @importFrom car leveneTest
+#' @export
+
+calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",padj_method = "fdr") {
   if (missing(polyA_table)) {
     stop("'polyA_table' must be defined.")
   }

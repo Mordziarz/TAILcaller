@@ -1,11 +1,42 @@
-#' Calculation of statistics and creation of the table
+#' Calculate Kruskal–Wallis p-values per entity for polyA lengths
 #'
-#' @param polyA_table the table created using the get_polyA function.
-#' @param grouping_factor the name of the column in the table that divides the experiment into groups.
-#' @param which_level the name of the column by which the statistics should be grouped, either transcripts or genes.
-#' @return a table object.
+#' \code{calculate_kruskal_polyA} computes, for each unique entity in a
+#' polyA length table, the Kruskal–Wallis test p-value comparing
+#' \code{polyA_length} distributions across groups. Only entities with
+#' more than two groups are tested; others receive \code{NA}.
+#'
+#' @param polyA_table A \code{data.frame} containing at least the columns
+#'   \code{"polyA_length"}, the grouping factor, and the entity identifier.
+#'   Defaults to \code{get_gene_id_out}.
+#' @param grouping_factor A string naming the column in \code{polyA_table}
+#'   that defines the groups for comparison. Default \code{"group"}.
+#' @param which_level A string naming the column in \code{polyA_table}
+#'   that defines the entity (e.g., gene, transcript). Default
+#'   \code{"gene_id"}.
+#' @param padj_method A string specifying the p-value adjustment method
+#'   passed to \code{\link[stats]{p.adjust}}. Default \code{"fdr"}.
+#'
+#' @return A \code{data.frame} with one row per entity containing:
+#'   \describe{
+#'     \item{<which_level>}{Entity identifier (column name given by
+#'       \code{which_level}).}
+#'     \item{p_value}{Raw p-value from the Kruskal–Wallis test or \code{NA}
+#'       if fewer than three groups.}
+#'     \item{padj}{Adjusted p-value across all entities (method =
+#'       \code{padj_method}).}
+#'   }
+#'
+#' @details
+#' - Entities with fewer than three distinct groups yield \code{NA} for
+#'   \code{p_value}.
+#' - P-values are adjusted for multiple testing using
+#'   \code{\link[stats]{p.adjust}} with the specified \code{padj_method}.
+#' - Progress and timing messages are printed to the console.
+#'
+#' @author Mateusz Mazdziarz
+#'
+#' @importFrom stats kruskal.test p.adjust
 #' @export
-#'
 
 calculate_kruskal_polyA <- function(polyA_table=get_gene_id_out, grouping_factor="group", which_level="gene_id",padj_method="fdr") {
   
