@@ -7,7 +7,7 @@
 #' @export
 #'
 
-calculate_kruskal_polyA <- function(polyA_table=get_gene_id_out, grouping_factor="group", which_level="gene_id") {
+calculate_kruskal_polyA <- function(polyA_table=get_gene_id_out, grouping_factor="group", which_level="gene_id",padj_method="fdr") {
   
   if (missing(polyA_table)) {
     stop("'polyA_table' must be defined.")
@@ -42,7 +42,7 @@ calculate_kruskal_polyA <- function(polyA_table=get_gene_id_out, grouping_factor
   }
   
   how_molecules$p_value <- p_values
-  how_molecules$padj <- stats::p.adjust(how_molecules$p_value, method = "fdr")
+  how_molecules$padj <- stats::p.adjust(how_molecules$p_value, method = padj_method)
   
   end_time <- base::Sys.time()
   
