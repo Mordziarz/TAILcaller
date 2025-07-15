@@ -235,3 +235,4 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
   ))
 }
 
+
