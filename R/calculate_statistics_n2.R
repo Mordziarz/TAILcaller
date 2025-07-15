@@ -55,6 +55,8 @@
 #'     \item \strong{Multiple Comparison Adjustment}: P-values are adjusted using the specified `padj_method`.
 #'   \end{enumerate}
 #'
+#' @author Mateusz Mazdziarz
+#'
 #' @importFrom stats wilcox.test t.test shapiro.test p.adjust sd mean
 #' @importFrom nortest lillie.test
 #' @importFrom car leveneTest
