@@ -243,7 +243,7 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
         tukey_res <- stats::TukeyHSD(aov_res)
         group_test <- list(anova_summary = anova_sum, tukey_hsd = tukey_res)
       } else if (all_normal && !homogeneous_variances) {
-        group_test <- stats::oneway.test(
+        welch_res <- stats::oneway.test(
           as.formula(paste0("polyA_length ~ ", grouping_column)),
           data = polyA_table,
           var.equal = FALSE
