@@ -72,6 +72,37 @@ get_polyA_out <- TAILcaller::get_polyA(samples_table = samples_table)
 
 ```
 
+# Density plot 
+
+The plot_density function generates a normalized density plot of single-read poly(A) tail length distributions, overlaying group-specific reference lines. These lines can represent either the median (stats = "median") or the mean (stats = "mean") poly(A) tail length for each group, allowing for quick visualization of key summary statistics.
+
+A core feature of the function is its automated selection of the appropriate statistical test for group comparisons. This selection is based on the number of groups and whether the assumptions for parametric tests (normality of distribution and homogeneity of variances) are met:
+
+For two groups (n = 2):
+
+If data in both groups exhibit a normal distribution and have homogeneous variances, the function performs a two-sample Student's t-test.
+If data in both groups exhibit a normal distribution but have unequal variances, a Welch's t-test is conducted.
+Otherwise (i.e., non-normality, unequal variances, or fewer than 3 observations in any group), a Wilcoxon rank-sum test (Mann-Whitney U test) is conducted.
+
+For more than two groups (n > 2):
+
+If data in all groups show a normal distribution and have homogeneous variances, the function applies a one-way Analysis of Variance (ANOVA), followed by a Tukey's HSD post-hoc test for pairwise comparisons.
+If normality is maintained, but variances are unequal, Welch's ANOVA is performed.
+Otherwise (i.e., non-normality, or fewer than 3 observations in any group), a Kruskal-Wallis test is executed, coupled with Dunn's multiple comparisons (using Bonferroni correction).
+
+This approach ensures that the statistical analysis is always appropriate for the data's characteristics, leading to reliable results, even when faced with common biological data challenges like skewness or small sample sizes in certain groups.
+
+```r
+density_plot <- TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_column = "group")
+
+density_plot$test
+density_plot$variance
+density_plot$normality
+density_plot$plot
+```
+
+![Density](plots/density.png)
+
 # Linking transcripts to genes
 
 The get_gene_id function links transcripts to genes, which is useful for performing significance analysis at the transcript or gene level.
@@ -150,37 +181,6 @@ TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out,
 ```
 
 ![MAplot](plots/maplot.png)
-
-# Density plot 
-
-The plot_density function generates a normalized density plot of single-read poly(A) tail length distributions, overlaying group-specific reference lines. These lines can represent either the median (stats = "median") or the mean (stats = "mean") poly(A) tail length for each group, allowing for quick visualization of key summary statistics.
-
-A core feature of the function is its automated selection of the appropriate statistical test for group comparisons. This selection is based on the number of groups and whether the assumptions for parametric tests (normality of distribution and homogeneity of variances) are met:
-
-For two groups (n = 2):
-
-If data in both groups exhibit a normal distribution and have homogeneous variances, the function performs a two-sample Student's t-test.
-If data in both groups exhibit a normal distribution but have unequal variances, a Welch's t-test is conducted.
-Otherwise (i.e., non-normality, unequal variances, or fewer than 3 observations in any group), a Wilcoxon rank-sum test (Mann-Whitney U test) is conducted.
-
-For more than two groups (n > 2):
-
-If data in all groups show a normal distribution and have homogeneous variances, the function applies a one-way Analysis of Variance (ANOVA), followed by a Tukey's HSD post-hoc test for pairwise comparisons.
-If normality is maintained, but variances are unequal, Welch's ANOVA is performed.
-Otherwise (i.e., non-normality, or fewer than 3 observations in any group), a Kruskal-Wallis test is executed, coupled with Dunn's multiple comparisons (using Bonferroni correction).
-
-This approach ensures that the statistical analysis is always appropriate for the data's characteristics, leading to reliable results, even when faced with common biological data challenges like skewness or small sample sizes in certain groups.
-
-```r
-density_plot <- TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_column = "group")
-
-density_plot$test
-density_plot$variance
-density_plot$normality
-density_plot$plot
-```
-
-![Density](plots/density.png)
 
 # Matrix
 
