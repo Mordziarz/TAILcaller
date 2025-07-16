@@ -87,7 +87,7 @@ Otherwise (i.e., non-normality, unequal variances, or fewer than 3 observations 
 For more than two groups (n > 2):
 
 If data in all groups show a normal distribution and have homogeneous variances, the function applies a one-way Analysis of Variance (ANOVA), followed by a Tukey's HSD post-hoc test for pairwise comparisons.
-If normality is maintained, but variances are unequal, Welch's ANOVA is performed.
+If normality is maintained, but variances are unequal, Welch's ANOVA + Games-Howell is performed.
 Otherwise (i.e., non-normality, or fewer than 3 observations in any group), a Kruskal-Wallis test is executed, coupled with Dunn's multiple comparisons (using Bonferroni correction).
 
 This approach ensures that the statistical analysis is always appropriate for the data's characteristics, leading to reliable results, even when faced with common biological data challenges like skewness or small sample sizes in certain groups.
