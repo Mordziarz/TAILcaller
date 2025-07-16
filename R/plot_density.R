@@ -248,6 +248,13 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
           data = polyA_table,
           var.equal = FALSE
         )
+        games_howell_res <- rstatix::games_howell_test(
+          data = polyA_table,
+          formula = as.formula(paste0("polyA_length ~ ", grouping_column)),
+          conf.level = 0.95,
+          detailed = FALSE
+        )
+        group_test <- list(welch_anova = welch_res, games_howell = games_howell_res)
       }
     }
   }
