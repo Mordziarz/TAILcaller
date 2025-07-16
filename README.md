@@ -93,7 +93,7 @@ Otherwise (i.e., non-normality, or fewer than 3 observations in any group), a Kr
 This approach ensures that the statistical analysis is always appropriate for the data's characteristics, leading to reliable results, even when faced with common biological data challenges like skewness or small sample sizes in certain groups.
 
 ```r
-density_plot <- TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_column = "group")
+density_plot <- TAILcaller::plot_density(polyA_table = get_polyA_out,stats = "mean",grouping_factor = "group")
 
 density_plot$test
 density_plot$variance
