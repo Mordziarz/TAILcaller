@@ -135,7 +135,7 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
       )
       levene_res <- tryCatch(
         {
-          car::leveneTest(polyA_length ~ group, data = temp_data, center = median)
+          car::leveneTest(paste0("polyA_length ~ ",grouping_factor), data = temp_data)
         },
         error = function(e) {
           NULL
