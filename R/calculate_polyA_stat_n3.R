@@ -83,7 +83,7 @@ calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out,grouping_facto
     chosen_test <- NA_character_
 
     if (n_groups >= 2) {
-      if (n_obs < 3) {
+      if (n_obs < 3 || any(grp_tbl < 2)) {
         p_val       <- suppressWarnings(
                          stats::kruskal.test(
                            as.formula(paste0("polyA_length ~ ", grouping_factor)),
@@ -92,11 +92,18 @@ calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out,grouping_facto
                        )
         chosen_test <- "Kruskal–Wallis"
       } else {
-        p_norm <- if (n_obs <= 5000) {
-          stats::shapiro.test(subdf$polyA_length)$p.value
-        } else {
-          nortest::lillie.test(subdf$polyA_length)$p.value
-        }
+        normality_p_values <- tapply(subdf$polyA_length, subdf[[grouping_factor]], function(x) {
+          if (length(x) >= 3) {
+            if (length(x) <= 5000) {
+              stats::shapiro.test(x)$p.value
+            } else {
+              nortest::lillie.test(x)$p.value
+            }
+          } else {
+            0
+          }
+        })
+        all_groups_normal <- all(normality_p_values > 0.05, na.rm = TRUE)
 
         if (all(grp_tbl >= 2)) {
           lev_p <- tryCatch({
@@ -109,31 +116,21 @@ calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out,grouping_facto
           lev_p <- NA_real_
         }
 
-        if (n_groups > 2 && !is.na(p_norm) && p_norm > 0.05) {
-          if (!is.na(lev_p) && lev_p > 0.05) {
-            aov_res <- stats::aov(
-              as.formula(paste0("polyA_length ~ ", grouping_factor)),
-              data = subdf
-            )
-            p_val       <- summary(aov_res)[[1]][["Pr(>F)"]][1]
-            chosen_test <- "ANOVA"
-          } else if (all(grp_tbl >= 2)) {
-            welch_res <- stats::oneway.test(
-              as.formula(paste0("polyA_length ~ ", grouping_factor)),
-              data = subdf,
-              var.equal = FALSE
-            )
-            p_val       <- welch_res$p.value
-            chosen_test <- "Welch ANOVA"
-          } else {
-            p_val       <- suppressWarnings(
-                             stats::kruskal.test(
-                               as.formula(paste0("polyA_length ~ ", grouping_factor)),
-                               data = subdf
-                             )$p.value
-                           )
-            chosen_test <- "Kruskal–Wallis"
-          }
+        if (all_groups_normal && !is.na(lev_p) && lev_p > 0.05) {
+          aov_res <- stats::aov(
+            as.formula(paste0("polyA_length ~ ", grouping_factor)),
+            data = subdf
+          )
+          p_val       <- summary(aov_res)[[1]][["Pr(>F)"]][1]
+          chosen_test <- "ANOVA"
+        } else if (all_groups_normal && all(grp_tbl >= 2)) {
+          welch_res <- stats::oneway.test(
+            as.formula(paste0("polyA_length ~ ", grouping_factor)),
+            data = subdf,
+            var.equal = FALSE
+          )
+          p_val       <- welch_res$p.value
+          chosen_test <- "Welch ANOVA"
         } else {
           p_val       <- suppressWarnings(
                            stats::kruskal.test(
