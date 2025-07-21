@@ -160,42 +160,64 @@ density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xi
 
 
   if (ngroups < 2) {
-    group_test <- "Only one group; no comparison performed."
-  } else {
-    if (!force_non_parametric) {
-      normality <- polyA_table %>%
-        dplyr::group_by(!!rlang::sym(grouping_factor)) %>%
-        dplyr::summarise(
-          n = dplyr::n(),
-          p_value = if (dplyr::n() <= 5000) {
-            stats::shapiro.test(polyA_length)$p.value
-          } else {
-            nortest::lillie.test(polyA_length)$p.value
-          },
-          .groups = 'drop'
-        )
-      all_normal <- all(normality$p_value > 0.05, na.rm = TRUE)
+  group_test <- "Only one group; no comparison performed."
+} else {
+  if (!force_non_parametric) {
+    normality <- polyA_table %>%
+      dplyr::group_by(!!rlang::sym(grouping_factor)) %>%
+      dplyr::summarise(
+        n = dplyr::n(),
+        p_value = (function() {
+          current_group_name <- as.character(dplyr::cur_group()[[1]])
+          data_vector <- polyA_length
 
-      if (all(group_counts$count >= 2)) {
-        levene_res <- tryCatch(
-          {
-            car::leveneTest(
-              as.formula(paste0("polyA_length ~ ", grouping_factor)),
-              data = polyA_table,
-              center = median
-            )
-          },
-          error = function(e) {
-            warning(paste0("Levene's test failed: ", e$message, ". Homogeneity of variance cannot be assessed."))
-            NULL
+          if (dplyr::n() < 3) {
+            warning(paste0("Not enough observations (n=", dplyr::n(), ") in group '", current_group_name, "' for normality test. Assuming non-normal."))
+            return(0)
           }
-        )
-        homogeneous_variances <- !is.null(levene_res) && levene_res[["Pr(>F)"]][1] > 0.05
-      } else {
-        warning("Not enough observations in some groups to perform Levene's test for homogeneity of variance. Assuming unequal variances for parametric tests if normality holds, or forcing non-parametric test if group sizes are too small (<3).")
-        homogeneous_variances <- FALSE
-      }
+          if (length(unique(data_vector)) == 1) {
+            warning(paste0("All 'polyA_length' values are identical in group '", current_group_name, "'. Normality test cannot be performed. Assuming non-normal."))
+            return(0) 
+          }
+
+          tryCatch({
+            if (dplyr::n() <= 5000) {
+              stats::shapiro.test(data_vector)$p.value
+            } else {
+              if (!requireNamespace("nortest", quietly = TRUE)) {
+                stop("Package 'nortest' is required for Lilliefor's test when n > 5000. Please install it.")
+              }
+              nortest::lillie.test(data_vector)$p.value
+            }
+          }, error = function(e) {
+            warning(paste0("Error in normality test for group '", current_group_name, "' (n=", dplyr::n(), "): ", e$message, ". Assuming non-normal."))
+            return(0) 
+          })
+        })(), 
+        .groups = 'drop'
+      )
+    all_normal <- all(normality$p_value > 0.05, na.rm = TRUE)
+
+    if (all(group_counts$count >= 2)) {
+      levene_res <- tryCatch(
+        {
+          car::leveneTest(
+            as.formula(paste0("polyA_length ~ ", grouping_factor)),
+            data = polyA_table,
+            center = median
+          )
+        },
+        error = function(e) {
+          warning(paste0("Levene's test failed: ", e$message, ". Homogeneity of variance cannot be assessed."))
+          NULL
+        }
+      )
+      homogeneous_variances <- !is.null(levene_res) && levene_res[["Pr(>F)"]][1] > 0.05
+    } else {
+      warning("Not enough observations in some groups to perform Levene's test for homogeneity of variance. Assuming unequal variances for parametric tests if normality holds, or forcing non-parametric test if group sizes are too small (<3).")
+      homogeneous_variances <- FALSE
     }
+  }
 
 
     if (ngroups == 2) {
