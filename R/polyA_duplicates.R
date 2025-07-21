@@ -12,6 +12,9 @@
 #'   `sample_name`, and `group`) will be removed from the `polyA_table`.
 #'   If `FALSE`, the original `polyA_table` will be returned in the `processed_table`
 #'   element, along with the duplicate summaries.
+#' @param gene_column_gtf A character string specifying the name of the column 
+#'   in `gtf_file` that contains gene identifiers. This column will be added 
+#'   to the merged output.
 #'
 #' @return A list containing the following elements:
 #'   \itemize{
@@ -81,10 +84,12 @@ polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE,gene_column_g
   
   output_table <- polyA_table
   
+  output_table$gene_id2 <- output_table[gene_column_gtf]
+
   if (delete_duplicates == TRUE) {
     message("Deleting duplicates based on combined index...")
     output_table$index <- paste0(output_table$read_id, "_",
-                                 output_table[gene_column_gtf], "_",
+                                 output_table$gene_id2, "_",
                                  output_table$polyA_length, "_",
                                  output_table$sample_name, "_",
                                  output_table$group)
