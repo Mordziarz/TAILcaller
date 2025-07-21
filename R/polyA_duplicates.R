@@ -41,17 +41,16 @@
 #' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_bw theme element_text
 #' @export
 
-polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE) {
+polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE,gene_column_gtf="gene_id") {
   
   if (missing(polyA_table)) {
     stop("'polyA_table' must be defined.")
   }
-  
-  required_cols <- c("read_id", "transcript_id", "polyA_length", "sample_name", "group")
-  if (!all(required_cols %in% colnames(polyA_table))) {
-    stop(paste0("polyA_table must contain the following columns: ", 
-                paste(required_cols, collapse = ", ")))
+
+      if (!base::is.character(gene_column_gtf) || !(gene_column_gtf %in% colnames(polyA_table))) {
+    stop(paste("Argument 'gene_column_gtf' must be a column name in the gtf data frame. Please check if the column", gene_column_gtf, "exists."))
   }
+
   
   message("Starting processing for polyA duplicates...")
   
@@ -85,7 +84,7 @@ polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE) {
   if (delete_duplicates == TRUE) {
     message("Deleting duplicates based on combined index...")
     output_table$index <- paste0(output_table$read_id, "_",
-                                 output_table$transcript_id, "_",
+                                 output_table[gene_column_gtf], "_",
                                  output_table$polyA_length, "_",
                                  output_table$sample_name, "_",
                                  output_table$group)

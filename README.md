@@ -71,21 +71,6 @@ samples_table <- data.frame(bam_path = c(bamfile1,bamfile2,bamfile3,bamfile4,bam
 get_polyA_out <- TAILcaller::get_polyA(samples_table = samples_table)
 
 ```
-# Duplicated reads
-
-There are situations where a single read ID might be assigned to one or more transcripts. This typically doesn't significantly impact analyses at the transcript level, especially with direct RNA sequencing, where definitively assigning a read ID to a specific transcript can be challenging. However, for gene-level analyses, it's recommended to remove these duplicates, adhering to the principle of "one polyA = one transcript."
-
-```r
-polyA_duplicates_out <- polyA_duplicates(polyA_table = get_polyA_out,delete_duplicates = TRUE)
-
-polyA_duplicates_out$processed_table
-polyA_duplicates_out$read_id_counts
-polyA_duplicates_out$duplicated_read_ids
-polyA_duplicates_out$read_categories_summary
-polyA_duplicates_out$categories_plot
-```
-
-![Categories](plots/duplicates.png)
 
 # Density plot 
 
@@ -138,6 +123,22 @@ get_gene_id_out <- TAILcaller::get_gene_id(polyA_table=get_polyA_out,
                                             transcript_column_gtf = "transcript_id",
                                             gene_column_gtf = "gene_id")
 ```
+
+# Duplicated reads
+
+There are situations where a single read ID might be assigned to one or more transcripts. This typically doesn't significantly impact analyses at the transcript level, especially with direct RNA sequencing, where definitively assigning a read ID to a specific transcript can be challenging. However, for gene-level analyses, it's recommended to remove these duplicates, adhering to the principle of "one polyA = one transcript."
+
+```r
+polyA_duplicates_out <- polyA_duplicates(polyA_table = get_gene_id_out,delete_duplicates = TRUE,gene_column_gtf="gene_id")
+
+polyA_duplicates_out$processed_table
+polyA_duplicates_out$read_id_counts
+polyA_duplicates_out$duplicated_read_ids
+polyA_duplicates_out$read_categories_summary
+polyA_duplicates_out$categories_plot
+```
+
+![Categories](plots/duplicates.png)
 
 # Calculation of basic statistics and counting molecules with polyA tails
 
