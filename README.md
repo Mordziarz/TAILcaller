@@ -85,7 +85,7 @@ polyA_duplicates_out$read_categories_summary
 polyA_duplicates_out$categories_plot
 ```
 
-![Categories](plots/duplicated.png)
+![Categories](plots/duplicates.png)
 
 # Density plot 
 
