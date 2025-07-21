@@ -1,0 +1,109 @@
+#' Process polyA tail length data to identify and optionally remove duplicates.
+#'
+#' This function takes a data frame of polyA tail length measurements, identifies
+#' duplicate `read_id` entries, and provides summaries and visualizations.
+#' Optionally, it can remove duplicate rows based on a combined index of key columns.
+#'
+#' @param polyA_table A data frame containing polyA tail length data.
+#'   It must include the columns: "read_id", "transcript_id", "polyA_length",
+#'   "sample_name", and "group".
+#' @param delete_duplicates A logical value. If `TRUE` (default), duplicate rows
+#'   (defined by a combined index of `read_id`, `transcript_id`, `polyA_length`,
+#'   `sample_name`, and `group`) will be removed from the `polyA_table`.
+#'   If `FALSE`, the original `polyA_table` will be returned in the `processed_table`
+#'   element, along with the duplicate summaries.
+#'
+#' @return A list containing the following elements:
+#'   \itemize{
+#'     \item \strong{processed_table}: A data frame. If `delete_duplicates` was `TRUE`,
+#'       this table will have duplicate rows removed. Otherwise, it will be the
+#'       original `polyA_table`.
+#'     \item \strong{read_id_counts}: A data frame summarizing the count for each
+#'       unique `read_id` in the input `polyA_table`, sorted by count in descending order.
+#'     \item \strong{duplicated_read_ids}: A data frame listing `read_id`s that appear
+#'       more than once, along with their counts.
+#'     \item \strong{read_categories_summary}: A data frame summarizing the number and
+#'       percentage of unique single reads versus duplicated/multiple reads.
+#'     \item \strong{categories_plot}: A `ggplot` object visualizing the distribution
+#'       of read categories (unique single vs. duplicated/multiple).
+#'   }
+#' @details
+#' The function first checks for the presence of required columns in `polyA_table`.
+#' It then proceeds to calculate summaries of `read_id` occurrences. If `delete_duplicates`
+#' is `TRUE`, a unique index is created from `read_id`, `transcript_id`, `polyA_length`,
+#' `sample_name`, and `group` to identify and remove truly identical rows.
+#' Messages are printed to the console indicating the progress and the number of
+#' duplicates found and removed.
+#'
+#' @author Mateusz Mazdziarz
+#'
+#' @importFrom dplyr group_by summarise n arrange filter mutate select
+#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_bw theme element_text
+#' @export
+
+polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE) {
+  
+  if (missing(polyA_table)) {
+    stop("'polyA_table' must be defined.")
+  }
+  
+  required_cols <- c("read_id", "transcript_id", "polyA_length", "sample_name", "group")
+  if (!all(required_cols %in% colnames(polyA_table))) {
+    stop(paste0("polyA_table must contain the following columns: ", 
+                paste(required_cols, collapse = ", ")))
+  }
+  
+  message("Starting processing for polyA duplicates...")
+  
+  summary_read_id <- polyA_table %>% 
+    dplyr::group_by(read_id) %>% 
+    dplyr::summarise(count = n(), .groups = 'drop') %>%
+    dplyr::arrange(desc(count))
+  
+  duplicated_reads_summary <- summary_read_id %>%
+    dplyr::filter(count > 1)
+  
+  message(paste0("Found ", nrow(duplicated_reads_summary), " read_ids with duplicates."))
+  
+  read_categories <- summary_read_id %>%
+    dplyr::mutate(category = ifelse(count == 1, "Unique Single", "Duplicated or Multiple")) %>%
+    dplyr::group_by(category) %>%
+    dplyr::summarise(num_reads = n(), .groups = 'drop') %>%
+    dplyr::mutate(percentage = num_reads / sum(num_reads) * 100)
+  
+  plot_categories <- ggplot(read_categories, aes(x = category, y = num_reads, fill = category)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = paste0(num_reads, " (", round(percentage, 1), "%)")),
+              vjust = -0.5, color = "black") +
+    labs(x = "Read category", y = "Number of reads") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),legend.position = "none")
+  
+  
+  output_table <- polyA_table
+  
+  if (delete_duplicates == TRUE) {
+    message("Deleting duplicates based on combined index...")
+    output_table$index <- paste0(output_table$read_id, "_",
+                                 output_table$transcript_id, "_",
+                                 output_table$polyA_length, "_",
+                                 output_table$sample_name, "_",
+                                 output_table$group)
+    
+    rows_before_deduplication <- nrow(output_table)
+    output_table <- output_table[!duplicated(output_table$index),]
+    rows_after_deduplication <- nrow(output_table)
+    
+    message(paste0("Removed ", rows_before_deduplication - rows_after_deduplication, " duplicate rows."))
+    
+    output_table <- dplyr::select(output_table, -index)
+  }
+  
+  return(list(
+    processed_table = output_table,
+    read_id_counts = summary_read_id, 
+    duplicated_read_ids = duplicated_reads_summary,
+    read_categories_summary = read_categories,
+    categories_plot = plot_categories
+  ))
+}

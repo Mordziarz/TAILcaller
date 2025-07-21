@@ -110,15 +110,24 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
 
     shapiro_or_lillie <- function(x) {
       if (length(x) >= 3) {
-        if (length(x) <= 5000) {
-          suppressWarnings(stats::shapiro.test(x)$p.value)
-        } else {
-          suppressWarnings(nortest::lillie.test(x)$p.value)
+        if (length(unique(x)) == 1) { 
+          return(0) 
         }
+        tryCatch({
+          if (length(x) <= 5000) {
+            stats::shapiro.test(x)$p.value
+          } else {
+            nortest::lillie.test(x)$p.value
+          }
+        }, error = function(e) {
+          warning(paste("Error in normality test for group:", e$message))
+          return(0)
+        })
       } else {
-        NA 
+        0
       }
     }
+
 
     normality_ctr_p <- shapiro_or_lillie(ctr_data)
     normality_trt_p <- shapiro_or_lillie(trt_data)

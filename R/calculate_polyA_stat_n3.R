@@ -94,11 +94,19 @@ calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out,grouping_facto
       } else {
         normality_p_values <- tapply(subdf$polyA_length, subdf[[grouping_factor]], function(x) {
           if (length(x) >= 3) {
-            if (length(x) <= 5000) {
-              stats::shapiro.test(x)$p.value
-            } else {
-              nortest::lillie.test(x)$p.value
+            if (length(unique(x)) == 1)
+              return(0)
             }
+            tryCatch({
+              if (length(x) <= 5000) {
+                stats::shapiro.test(x)$p.value
+              } else {
+                nortest::lillie.test(x)$p.value
+              }
+            }, error = function(e) {
+              warning(paste("Error in normality test for group:", e$message))
+              return(0)
+            })
           } else {
             0
           }
