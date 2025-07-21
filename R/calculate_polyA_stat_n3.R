@@ -94,9 +94,9 @@ calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out,grouping_facto
       } else {
         normality_p_values <- tapply(subdf$polyA_length, subdf[[grouping_factor]], function(x) {
           if (length(x) >= 3) {
-            if (length(unique(x)) == 1) { # Added opening bracket
+            if (length(unique(x)) == 1) {
               return(0)
-            } # Added closing bracket for 'if (length(unique(x)) == 1)'
+            } 
             tryCatch({
               if (length(x) <= 5000) {
                 stats::shapiro.test(x)$p.value
