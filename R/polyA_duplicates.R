@@ -84,7 +84,7 @@ polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE,gene_column_g
   
   output_table <- polyA_table
   
-  output_table$gene_id2 <- output_table[[gene_column_gtf]]
+  output_table$gene_id2 <- output_table[[gene_column_gtf]] 
 
   if (delete_duplicates == TRUE) {
     message("Deleting duplicates based on combined index...")
@@ -100,7 +100,7 @@ polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE,gene_column_g
     
     message(paste0("Removed ", rows_before_deduplication - rows_after_deduplication, " duplicate rows."))
     
-    output_table <- dplyr::select(output_table, -index)
+    output_table <- dplyr::select(output_table, -index, -gene_id2)
   }
   
   return(list(
