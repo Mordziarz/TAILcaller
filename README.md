@@ -138,8 +138,6 @@ polyA_duplicates_out$read_categories_summary
 polyA_duplicates_out$categories_plot
 ```
 
-![Categories](plots/duplicates.png)
-
 # Calculation of basic statistics and counting molecules with polyA tails
 
 The count_molecules function allows counting the number of molecules (at the transcript level, which_level = column with transcripts, or at the gene level, which_level = column with genes) in groups (grouping_factor = "group").
