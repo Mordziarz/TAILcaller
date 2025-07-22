@@ -126,7 +126,7 @@ get_gene_id_out <- TAILcaller::get_gene_id(polyA_table=get_polyA_out,
 
 # Duplicated reads
 
-There are situations where a single read ID might be assigned to one or more transcripts. This typically doesn't significantly impact analyses at the transcript level, especially with direct RNA sequencing, where definitively assigning a read ID to a specific transcript can be challenging. However, for gene-level analyses, it's recommended to remove these duplicates, adhering to the principle of "one polyA = one transcript."
+There are situations where a single "read_id" might be assigned to one or more transcripts. This typically doesn't significantly impact analyses at the transcript level, especially with direct RNA sequencing, where definitively assigning a "read_id" to a specific transcript can be challenging. However, for gene-level analyses, it's recommended to remove these duplicates, adhering to the principle of "one polyA = one transcript."
 
 ```r
 polyA_duplicates_out <- polyA_duplicates(polyA_table = get_gene_id_out,delete_duplicates = TRUE,gene_column_gtf="gene_id")
