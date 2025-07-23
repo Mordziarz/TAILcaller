@@ -16,35 +16,6 @@
 #' @param collapsed_color A single color name or hex code for points classified as “Collapsed.”  
 #' @param expansion_color A single color name or hex code for points classified as “Expansion.”  
 #'
-#' @return A \code{ggplot} object representing an MA plot of poly(A) tail changes,  
-#'   with points colored and shaded by significance category.
-#'
-#' @export
-#'
-#' @details  
-#' Steps performed by the function:  
-#' \itemize{  
-#'   \item Validates that \code{calculate_statistics_out} is provided and has the required columns.  
-#'   \item Converts \code{Log2FC} and \code{padj} to numeric and filters out NA values.  
-#'   \item Classifies each feature as:  
-#'     \describe{  
-#'       \item{Collapsed}{\code{Log2FC < 0} & \code{padj < 0.05}}  
-#'       \item{Expansion}{\code{Log2FC > 0} & \code{padj < 0.05}}  
-#'       \item{No significant}{all others}  
-#'     }  
-#'   \item Computes \code{mean = (mean_group_ctr + mean_group_trt)/2} for each feature.  
-#'   \item Orders points so significant changes plot on top.  
-#'   \item Builds a \code{ggplot2} scatter plot with a horizontal line at \code{y = 0},  
-#'     custom axis labels, themes, and legends.  
-#'   \item Applies manual scales for color, fill, and alpha using the provided  
-#'     \code{collapsed_color} and \code{expansion_color}, with grey for non-significant points.  
-#' }
-#'
-#' @seealso  
-#' \code{\link{calculate_statistics}} for input data;  
-#' \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{scale_color_manual}},  
-#' \code{\link[ggplot2]{scale_fill_manual}} for styling.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline xlab ylab theme element_text theme_bw guides guide_legend scale_color_manual scale_fill_manual scale_alpha_manual

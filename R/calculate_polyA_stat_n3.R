@@ -23,29 +23,11 @@
 #' @param padj_method A string specifying the p-value adjustment method 
 #'   passed to \code{\link[stats]{p.adjust}}. Default \code{"fdr"}.
 #'
-#' @return A \code{data.frame} with one row per entity and columns:
-#'   \describe{
-#'     \item{<which_level>}{Entity identifier (named as supplied).}
-#'     \item{test_used}{The test applied: \code{"ANOVA"}, \code{"Welch ANOVA"}, 
-#'       or \code{"Kruskal–Wallis"}.}
-#'     \item{p_value}{Raw p-value from the chosen test.}
-#'     \item{padj}{Adjusted p-value across all entities.}
-#'   }
-#'
-#' @details
-#' - Entities with fewer than two groups yield \code{NA} p-values.
-#' - Entities with <3 total observations default to Kruskal–Wallis.
-#' - Normality assessed by Shapiro–Wilk for n ≤ 5000, otherwise by Lilliefors.
-#' - Variance homogeneity assessed by Levene’s test when each group has ≥2 obs.
-#' - ANOVA used if normal + homogeneous; Welch ANOVA if normal + heterogeneous; 
-#'   otherwise Kruskal–Wallis.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats shapiro.test kruskal.test aov oneway.test p.adjust
 #' @importFrom nortest lillie.test
 #' @importFrom car leveneTest
-#' @export
 
 calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",padj_method = "fdr") {
   if (missing(polyA_table)) {

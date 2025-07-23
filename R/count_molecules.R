@@ -20,63 +20,6 @@
 #'   level (e.g., "transcript_id") or gene level (e.g., "gene_id"), allowing 
 #'   for flexible aggregation of molecular data.
 #'
-#' @return A grouped data frame (tibble) with summary statistics containing 
-#'   the following columns:
-#'   \describe{
-#'     \item{grouping_factor}{The values from the specified grouping column}
-#'     \item{which_level}{The values from the specified level column}
-#'     \item{count}{Integer count of molecules/observations in each group}
-#'     \item{avg_polyA_length}{Numeric mean of polyA tail lengths for each group}
-#'     \item{median_polyA_length}{Numeric median of polyA tail lengths for each group}
-#'   }
-#'   Each row represents a unique combination of grouping factor and level values.
-#'
-#' @export
-#'
-#' @details
-#' The function performs the following statistical operations:
-#' \itemize{
-#'   \item Groups the data by the specified grouping factor and level columns
-#'   \item Counts the number of observations (molecules) in each group using \code{n()}
-#'   \item Calculates the arithmetic mean of polyA tail lengths using \code{mean()}
-#'   \item Calculates the median of polyA tail lengths using \code{median()}
-#'   \item Reports processing time and completion status
-#' }
-#' 
-#' The function uses `dplyr` operations with non-standard evaluation (NSE) 
-#' through the `sym()` function to handle column names passed as character 
-#' strings. This allows for flexible column specification while maintaining 
-#' the functionality of `dplyr` grouping and summarization operations.
-#'
-#' @section Performance:
-#' The function displays progress messages during execution, including:
-#' \itemize{
-#'   \item Start notification when processing begins
-#'   \item Processing completion time in minutes
-#'   \item Success confirmation message
-#' }
-#' 
-#' @section Statistical Measures:
-#' \itemize{
-#'   \item **Count**: Total number of molecules/reads in each group
-#'   \item **Mean**: Average polyA tail length, sensitive to outliers
-#'   \item **Median**: Middle value of polyA tail lengths, robust to outliers
-#' }
-#' 
-#' @section Data Requirements:
-#' The input `polyA_table` must contain:
-#' \itemize{
-#'   \item A column named "polyA_length" with numeric values
-#'   \item The column specified in `grouping_factor` parameter
-#'   \item The column specified in `which_level` parameter
-#' }
-#'
-#' @seealso 
-#' \code{\link{get_gene_id}} for creating the input polyA table
-#' \code{\link[dplyr]{group_by}} for data grouping functionality
-#' \code{\link[dplyr]{summarise}} for data summarization operations
-#' \code{\link[base]{mean}} and \code{\link[stats]{median}} for statistical calculations
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom dplyr group_by summarise n

@@ -23,38 +23,6 @@
 #' @param treated_group Character; name of the treated group level in `grouping_factor`.
 #' @param padj_method Character; method for p-value adjustment. See `p.adjust.methods` for options. Defaults to \code{"fdr"}.
 #'
-#' @return A \code{data.frame} with one row per unique molecule, containing:
-#'   \describe{
-#'     \item{\code{<which_level>} (character/factor)}{Molecule identifier.}
-#'     \item{\code{p_value} (numeric)}{P-value from the chosen statistical test.}
-#'     \item{\code{mean_group_ctr} (numeric)}{Mean poly(A) length in the control group.}
-#'     \item{\code{mean_group_trt} (numeric)}{Mean poly(A) length in the treated group.}
-#'     \item{\code{diff_length} (numeric)}{Difference in mean poly(A) length (treated - control).}
-#'     \item{\code{fold_change} (numeric)}{Fold change of mean poly(A) length (treated / control).}
-#'     \item{\code{cohen_d} (numeric)}{Cohen's d effect size.}
-#'     \item{\code{cohen_effect} (character)}{Categorical interpretation of Cohen's d ("small", "medium", "large").}
-#'     \item{\code{padj} (numeric)}{Adjusted p-value.}
-#'     \item{\code{Log2FC} (numeric)}{Log2 Fold Change.}
-#'     \item{\code{test_performed} (character)}{Name of the statistical test performed for the molecule.}
-#'   }
-#'
-#' @details
-#' This function iterates through each unique molecule identified by `which_level`.
-#' For each molecule, it extracts poly(A) tail lengths for the specified control and
-#' treated groups. It then applies the following logic for statistical testing:
-#' \enumerate{
-#'   \item \strong{Minimum Observations Check}: If either the control or treated group has fewer than 2 observations for a given molecule, `NA`s are returned for statistical results, as a standard deviation cannot be calculated for a single observation, making t-tests or Cohen's d impossible.
-#'   \item \strong{Normality Test}: Shapiro-Wilk test (for N <= 5000) or Lilliefors test (for N > 5000) is performed on both control and treated data subsets for the current molecule.
-#'   \item \strong{Homogeneity of Variance Test}: Levene's test is performed if both groups have at least 2 observations.
-#'   \item \strong{Test Selection}:
-#'     \itemize{
-#'       \item If *both* groups are normally distributed *and* have homogeneous variances, a \strong{Student's t-test} (`var.equal = TRUE`) is conducted.
-#'       \item If *both* groups are normally distributed *but* have unequal variances, a \strong{Welch's t-test} (`var.equal = FALSE`) is conducted.
-#'       \item Otherwise (if either group is non-normal, or fewer than 3 observations for normality test, or Levene's test cannot be performed, or variances are unequal and normality doesn't hold for both), a \strong{Wilcoxon rank-sum test} is conducted.
-#'     \item \strong{Effect Size}: Cohen's d is calculated based on the pooled standard deviation (for cases where it's applicable, primarily for parametric tests, but included for all as a general effect size measure).
-#'     \item \strong{Multiple Comparison Adjustment}: P-values are adjusted using the specified `padj_method`.
-#'   \end{enumerate}
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats wilcox.test t.test shapiro.test p.adjust sd mean
@@ -62,7 +30,6 @@
 #' @importFrom car leveneTest
 #' @importFrom dplyr %>% distinct
 #' @importFrom rlang sym
-#' @export
 
 calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_factor = "group", which_level = "gene_id", control_group = NULL, treated_group = NULL, padj_method = "fdr") {
   if (missing(polyA_table)) stop("'polyA_table' must be defined.")

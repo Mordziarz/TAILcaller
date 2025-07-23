@@ -15,39 +15,12 @@
 #'   in \code{samples_table} used to color points in the PCA plot (e.g., 
 #'   \code{"group"}).
 #'
-#' @return A \code{ggplot} object showing samples plotted on PC1 vs. PC2, with 
-#'   axis labels indicating the percent variance explained by each component.
-#'
-#' @export
-#'
-#' @details
-#' The function performs these steps:
-#' \itemize{
-#'   \item Validates that \code{get_matrix_out} is provided.
-#'   \item Adds a \code{names} column to \code{samples_table} from 
-#'     \code{sample_name}.
-#'   \item Transposes \code{get_matrix_out} so samples are rows.
-#'   \item Runs \code{stats::prcomp()} without scaling (center only).
-#'   \item Extracts the PCA scores (\code{pca$x}) and merges with 
-#'     \code{samples_table} by sample name.
-#'   \item Creates a scatter plot of PC1 vs. PC2 using \code{ggplot2}, labeling 
-#'     axes with percent variance explained and coloring points by the specified 
-#'     grouping factor.
-#' }
-#'
-#' @section Plot Customization:
-#' Uses \code{theme_bw()} with grid lines removed. Point size is set to 3.
-#'
-#' @seealso
-#' \code{\link{get_matrix}} for generating the input matrix;  
-#' \code{\link[stats]{prcomp}} for PCA computation;  
-#' \code{\link[ggplot2]{geom_point}} for plotting.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats prcomp summary
 #' @importFrom ggplot2 ggplot aes geom_point xlab ylab ggtitle theme_bw theme element_blank
 #' @importFrom base merge round paste0 t
+#' @export
 
 PCA_polyA <- function(get_matrix_out=get_matrix_out,samples_table=samples_table,grouping_factor="group"){
   

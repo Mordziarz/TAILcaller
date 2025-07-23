@@ -26,35 +26,9 @@
 #'   to \code{\link[stats]{p.adjust}} (e.g., \code{"fdr"}, \code{"BH"},
 #'   \code{"bonferroni"}). Default \code{"fdr"}.
 #'
-#' @return A \code{data.frame} with one row per entity and columns:
-#'   \describe{
-#'     \item{<which_level>}{Entity identifier (column name as supplied).}
-#'     \item{p_value}{Raw p-value from the Wilcoxon test or \code{NA} if
-#'       insufficient observations.}
-#'     \item{padj}{Adjusted p-value across all entities.}
-#'     \item{mean_group_ctr}{Mean polyA length in the control group.}
-#'     \item{mean_group_trt}{Mean polyA length in the treated group.}
-#'     \item{diff_length}{Mean difference (treated − control).}
-#'     \item{fold_change}{Ratio of treated mean to control mean.}
-#'     \item{Log2FC}{Log2-transformed fold change.}
-#'     \item{cohen_d}{Cohen’s d effect size.}
-#'     \item{cohen_effect}{Effect size category: \code{"small"},
-#'       \code{"medium"}, or \code{"large"}.}
-#'   }
-#'
-#' @details
-#' - Entities with fewer than two observations in either group receive \code{NA}
-#'   for all statistics.
-#' - Wilcoxon rank-sum test is used to compare nonparametric distributions.
-#' - Fold change is undefined (\code{NA}) if the control mean is zero.
-#' - Cohen’s d is computed using pooled standard deviation.
-#' - P-values are adjusted by \code{\link[stats]{p.adjust}} with
-#'   \code{padj_method}.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats wilcox.test p.adjust
-#' @export
 
 calculate_statistics <- function(polyA_table = get_gene_id_out, grouping_factor = "group", which_level = "gene_id", control_group = NULL, treated_group = NULL, padj_method="fdr") {
   if (missing(polyA_table)) stop("'polyA_table' must be defined.")

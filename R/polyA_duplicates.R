@@ -16,33 +16,10 @@
 #'   in `gtf_file` that contains gene identifiers. This column will be added 
 #'   to the merged output.
 #'
-#' @return A list containing the following elements:
-#'   \itemize{
-#'     \item \strong{processed_table}: A data frame. If `delete_duplicates` was `TRUE`,
-#'       this table will have duplicate rows removed. Otherwise, it will be the
-#'       original `polyA_table`.
-#'     \item \strong{read_id_counts}: A data frame summarizing the count for each
-#'       unique `read_id` in the input `polyA_table`, sorted by count in descending order.
-#'     \item \strong{duplicated_read_ids}: A data frame listing `read_id`s that appear
-#'       more than once, along with their counts.
-#'     \item \strong{read_categories_summary}: A data frame summarizing the number and
-#'       percentage of unique single reads versus duplicated/multiple reads.
-#'     \item \strong{categories_plot}: A `ggplot` object visualizing the distribution
-#'       of read categories (unique single vs. duplicated/multiple).
-#'   }
-#' @details
-#' The function first checks for the presence of required columns in `polyA_table`.
-#' It then proceeds to calculate summaries of `read_id` occurrences. If `delete_duplicates`
-#' is `TRUE`, a unique index is created from `read_id`, `transcript_id`, `polyA_length`,
-#' `sample_name`, and `group` to identify and remove truly identical rows.
-#' Messages are printed to the console indicating the progress and the number of
-#' duplicates found and removed.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom dplyr group_by summarise n arrange filter mutate select
 #' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_bw theme element_text
-#' @export
 
 polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE,gene_column_gtf="gene_id") {
   

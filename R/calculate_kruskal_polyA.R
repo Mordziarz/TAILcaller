@@ -16,27 +16,9 @@
 #' @param padj_method A string specifying the p-value adjustment method
 #'   passed to \code{\link[stats]{p.adjust}}. Default \code{"fdr"}.
 #'
-#' @return A \code{data.frame} with one row per entity containing:
-#'   \describe{
-#'     \item{<which_level>}{Entity identifier (column name given by
-#'       \code{which_level}).}
-#'     \item{p_value}{Raw p-value from the Kruskal–Wallis test or \code{NA}
-#'       if fewer than three groups.}
-#'     \item{padj}{Adjusted p-value across all entities (method =
-#'       \code{padj_method}).}
-#'   }
-#'
-#' @details
-#' - Entities with fewer than three distinct groups yield \code{NA} for
-#'   \code{p_value}.
-#' - P-values are adjusted for multiple testing using
-#'   \code{\link[stats]{p.adjust}} with the specified \code{padj_method}.
-#' - Progress and timing messages are printed to the console.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats kruskal.test p.adjust
-#' @export
 
 calculate_kruskal_polyA <- function(polyA_table=get_gene_id_out, grouping_factor="group", which_level="gene_id",padj_method="fdr") {
   

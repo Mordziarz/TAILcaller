@@ -20,52 +20,6 @@
 #'   \code{"blue_green"}, \code{"green_blue"}, \code{"blue_red"} or 
 #'   \code{"red_blue"}.
 #'
-#' @return A list with components:
-#'   \describe{
-#'     \item{matrix}{A numeric matrix of counts or percentages (rows = groups, columns = length bins).}
-#'     \item{heatmap}{A \code{Heatmap} object from ComplexHeatmap, drawn and ready for display.}
-#'     \item{tree}{A \code{ggtree} object representing the row dendrogram.}
-#'   }
-#'
-#' @export
-#'
-#' @details
-#' The function performs these steps:
-#' \itemize{
-#'   \item Validates input data frame, grouping column, and parameters.
-#'   \item Computes the 0.99 quantile of \code{polyA_length} to define the 
-#'     maximum bin range.
-#'   \item Creates equally spaced bins of width \code{frame} and counts reads 
-#'     whose tail lengths fall into each bin for each group.
-#'   \item Optionally normalizes each row to percentages if 
-#'     \code{select = "normalized"}.
-#'   \item Calculates decile quantiles of the matrix values to set color breaks.
-#'   \item Constructs a heatmap with \code{ComplexHeatmap::Heatmap()}, using 
-#'     a user-selected color ramp from \code{circlize::colorRamp2()}.
-#'   \item Draws the heatmap and extracts the row dendrogram, converting it 
-#'     to a \code{ggtree} plot.
-#' }
-#'
-#' @section Color Palettes:
-#' Available palettes map low values to the first color and high values to the 
-#' last. For example, \code{"green_red"} transitions from dark green to red.
-#'
-#' @section Error Handling:
-#' The function stops with an informative message if:
-#' \itemize{
-#'   \item \code{polyA_table} is not a data frame or lacks \code{polyA_length}.
-#'   \item \code{grouping_factor} is missing or not a factor/character column.
-#'   \item \code{frame} is not a single positive number.
-#'   \item \code{select} is not one of \code{"base"} or \code{"normalized"}.
-#'   \item \code{heatmap_color} is not one of the six valid palette names.
-#' }
-#'
-#' @seealso
-#' \code{\link{get_polyA}} for generating \code{polyA_table};  
-#' \code{\link[circlize]{colorRamp2}} for palette creation;  
-#' \code{\link[ComplexHeatmap]{Heatmap}} for heatmap generation;  
-#' \code{\link[ggtree]{ggtree}} for dendrogram plotting.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats quantile

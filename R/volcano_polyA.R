@@ -14,35 +14,6 @@
 #' @return A \code{ggplot} object representing the volcano plot, with points colored
 #'   and shaded by poly(A) tail length change category.
 #'
-#' @export
-#'
-#' @details
-#' The function performs the following steps:
-#' \itemize{
-#'   \item Validates that \code{calculate_statistics_out} is provided and contains 
-#'     \code{Log2FC} and \code{padj} columns.
-#'   \item Converts \code{Log2FC} and \code{padj} to numeric and removes any NA values.
-#'   \item Classifies each transcript into:
-#'     \describe{
-#'       \item{Collapsed}{\code{Log2FC < 0} and \code{padj < 0.05}}
-#'       \item{Expansion}{\code{Log2FC > 0} and \code{padj < 0.05}}
-#'       \item{No significant}{all others}
-#'     }
-#'   \item Sets plotting aesthetics: vertical line at \code{x = 0}, horizontal line at 
-#'     \code{y = –log10(0.05)}, axis labels, theme, and legend formatting.
-#'   \item Applies manual scales for color, fill, and alpha using the provided 
-#'     \code{collapsed_color} and \code{expansion_color}, with greys for non-significant points.
-#' }
-#'
-#' @section Color Mapping:
-#' The \code{collapsed_color} and \code{expansion_color} arguments are used to build  
-#' two opacity variants (alpha = 0.5 and 0.25) for fill and color aesthetics.
-#'
-#' @seealso
-#' \code{\link{calculate_statistics}} for generating the input data;
-#' \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{scale_color_manual}},
-#' \code{\link[ggplot2]{scale_fill_manual}} for plot customization.
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_vline geom_hline xlab ylab theme element_text

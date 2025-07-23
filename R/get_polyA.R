@@ -13,40 +13,6 @@
 #'     \item{group}{Character vector with group classifications}
 #'   }
 #'
-#' @return A data frame with the following columns:
-#'   \describe{
-#'     \item{read_id}{Character vector containing read identifiers}
-#'     \item{transcript_id}{Character vector containing transcript identifiers}
-#'     \item{polyA_length}{Numeric vector containing polyA tail lengths}
-#'     \item{sample_name}{Character vector containing sample names}
-#'     \item{group}{Character vector containing group classifications}
-#'   }
-#'   Only returns rows where both polyA_length and transcript_id are not NA.
-#'
-#' @export
-#'
-#' @details 
-#' The function uses the Rsamtools package to scan BAM files and extract 
-#' specific information including query names (qname), reference names (rname), 
-#' and the "pt" tag which contains polyA tail length information from Dorado.
-#' 
-#' Progress messages are displayed during processing, showing the number of 
-#' samples processed. The function also reports the total execution time upon 
-#' completion.
-#' 
-#' @section Requirements:
-#' - Input BAM files must be indexed
-#' - BAM files must contain the "pt" tag (polyA tail length from Dorado)
-#' - The samples_table must contain all required columns
-#'
-#' @section Error Handling:
-#' The function stops execution if the required columns (bam_path, sample_name, 
-#' group) are not present in the samples_table.
-#'
-#' @seealso 
-#' \code{\link[Rsamtools]{scanBam}} for BAM file reading functionality
-#' \code{\link[Rsamtools]{ScanBamParam}} for BAM scanning parameters
-#'
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom Rsamtools scanBam ScanBamParam
