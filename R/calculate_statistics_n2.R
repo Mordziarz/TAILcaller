@@ -108,24 +108,29 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
       ))
     }
 
-    shapiro_or_lillie <- function(x) {
-      if (length(x) >= 3) {
-        if (length(unique(x)) == 1) { 
-          return(0) 
-        }
-        tryCatch({
-          if (length(x) <= 5000) {
-            stats::shapiro.test(x)$p.value
-          } else {
-            nortest::lillie.test(x)$p.value
-          }
-        }, error = function(e) {
-          warning(paste("Error in normality test for group:", e$message))
-          return(0)
-        })
-      } else {
-        0
+    shapiro_or_lillie <- function(x, group_name = "") {
+      if (length(x) < 3) {
+        warning(paste0("Not enough observations (n=", length(x), ") in group '", group_name, "' for normality test. Normality cannot be assessed."))
+        return(NA)
       }
+      if (length(unique(x)) == 1) {
+        warning(paste0("All 'polyA_length' values are identical in group '", group_name, "'. Normality test cannot be performed. Normality cannot be assessed."))
+        return(NA)
+      }
+
+      tryCatch({
+        if (length(x) <= 5000) {
+          stats::shapiro.test(x)$p.value
+        } else {
+          if (!requireNamespace("nortest", quietly = TRUE)) {
+            stop("Package 'nortest' is required for Lilliefor's test when n > 5000. Please install it.")
+          }
+          nortest::lillie.test(x)$p.value
+        }
+      }, error = function(e) {
+        warning(paste0("Error in normality test for group '", group_name, "' (n=", length(x), "): ", e$message, ". Normality cannot be assessed."))
+        return(NA)
+      })
     }
 
 
@@ -144,9 +149,11 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
       )
       levene_res <- tryCatch(
         {
-          car::leveneTest(paste0("polyA_length ~ ",grouping_factor), data = temp_data)
+
+          car::leveneTest(as.formula(paste0("polyA_length ~ ", grouping_factor)), data = temp_data, center = median)
         },
         error = function(e) {
+          warning(paste0("Levene's test failed for molecule '", molecule, "': ", e$message))
           NULL
         }
       )
@@ -156,7 +163,7 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
     }
     homogeneous_variances <- !is.na(levene_p) && levene_p > 0.05
 
-    p_val <- NA
+p_val <- NA
     if (all_normal && homogeneous_variances) {
       p_val <- suppressWarnings(
         stats::t.test(ctr_data, trt_data, var.equal = TRUE)$p.value
@@ -192,7 +199,6 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
       cd <- abs((mean_trt - mean_ctr) / pooled_sd)
     }
 
-
     list(
       p_value = p_val,
       mean_ctr = mean_ctr,
@@ -206,6 +212,7 @@ calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_fact
       test_performed = test_name
     )
   })
+
 
   how_molecules$p_value <- sapply(results, `[[`, "p_value")
   how_molecules$mean_group_ctr <- sapply(results, `[[`, "mean_ctr")
