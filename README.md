@@ -82,13 +82,13 @@ The plot_density function generates a normalized density plot of single-read pol
 
 A core feature of the function is its automated selection of the appropriate statistical test for group comparisons. This selection is based on the number of groups and whether the assumptions for parametric tests (normality of distribution and homogeneity of variances) are met:
 
-For two groups (n = 2):
+For two groups (grp = 2):
 
 If data in both groups exhibit a normal distribution and have homogeneous variances, the function performs a two-sample Student's t-test.
 If data in both groups exhibit a normal distribution but have unequal variances, a Welch's t-test is conducted.
 Otherwise (i.e., non-normality, unequal variances, or fewer than 3 observations in any group), a Wilcoxon rank-sum test (Mann-Whitney U test) is conducted.
 
-For more than two groups (n > 2):
+For more than two groups (grp > 2):
 
 If data in all groups show a normal distribution and have homogeneous variances, the function applies a one-way Analysis of Variance (ANOVA), followed by a Tukey's HSD post-hoc test for pairwise comparisons.
 If normality is maintained, but variances are unequal, Welch's ANOVA + Games-Howell is performed.
@@ -159,7 +159,7 @@ The calculate_statistics function performs the Wilcoxon test, p-value adjustment
 ```r
 TAILcaller::calculate_statistics(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "condition1",treated_group = "condition2",padj_method="fdr")
 ```
-If you want the function to check for normality of distribution and homogeneity of variances for each gene/transcript, and then perform a test for n=2, use:
+If you want the function to check for normality of distribution and homogeneity of variances for each gene/transcript, and then perform a test for grp=2, use:
 ```r
 TAILcaller::calculate_statistics_n2(polyA_table = get_gene_id_out,grouping_factor = "group",which_level = "gene_id",control_group = "condition1",treated_group = "condition2",padj_method="fdr")
 ```
@@ -170,7 +170,7 @@ For n > 2, the calculate_kruskal_polyA() function has been prepared.
 TAILcaller::calculate_kruskal_polyA(polyA_table = get_gene_id_out,grouping_factor = "sample_name",which_level = "gene_id",padj_method="fdr")
 ```
 
-If you want the function to check for normality of distribution and homogeneity of variances for each gene/transcript, and then perform a test for n>2, use:
+If you want the function to check for normality of distribution and homogeneity of variances for each gene/transcript, and then perform a test for grp>2, use:
 
 ```r
 TAILcaller::calculate_polyA_stat_n3(polyA_table = get_gene_id_out,grouping_factor = "sample_name",which_level = "gene_id",padj_method="fdr")
