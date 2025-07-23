@@ -299,7 +299,7 @@ combined_plot_ma_vol<- ggarrange(volcano, ma_plot,
                                     ncol = 2,
                                     nrow = 1)
 
-png(("density_genes_vol_ma.png"), width=8, height=6, units = "in", res = 300)
+png(("vol_ma.png"), width=8, height=6, units = "in", res = 300)
 combined_plot_ma_vol
 dev.off()
 
