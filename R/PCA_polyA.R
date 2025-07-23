@@ -20,7 +20,6 @@
 #' @importFrom stats prcomp summary
 #' @importFrom ggplot2 ggplot aes geom_point xlab ylab ggtitle theme_bw theme element_blank
 #' @importFrom base merge round paste0 t
-#' @export
 
 PCA_polyA <- function(get_matrix_out=get_matrix_out,samples_table=samples_table,grouping_factor="group"){
   
