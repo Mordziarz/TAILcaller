@@ -247,3 +247,8 @@ polyA_heatmap_out$tree
 ```
 
 ![tree](plots/tree_polyA.png)
+
+# Citation
+When utilizing TAILcaller, kindly cite: 
+
+Mateusz Maździarz, Łukasz Paukszto, Jakub Sawicki, TAILcaller: an R package for analyzing differences in poly(A) tail length for Oxford Nanopore RNA sequencing, Bioinformatics Advances, 2025;, vbaf235, https://doi.org/10.1093/bioadv/vbaf235
