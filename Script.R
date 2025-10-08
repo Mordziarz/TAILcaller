@@ -131,7 +131,7 @@ calculate_statistics_out_n3 <- TAILcaller::calculate_kruskal_polyA(polyA_table =
                                                                 which_level = "gene_id",
                                                                 padj_method="fdr")
 
-calculate_statistics_out_n3_sig <- calculate_statistics_out[!is.na(calculate_statistics_out_n3$padj),]
+calculate_statistics_out_n3_sig <- calculate_statistics_out_n3[!is.na(calculate_statistics_out_n3$padj),]
 calculate_statistics_out_n3_sig <- calculate_statistics_out_n3_sig[calculate_statistics_out_n3_sig$padj < 0.05,]
 
 write.csv2(calculate_statistics_out_sig,"calculate_statistics_out_n3_sig.csv")
@@ -278,6 +278,26 @@ polyA_table_MSTRG.3734$plot
 polyA_table_MSTRG.3734 <- polyA_table_MSTRG.3734$plot + 
   ggtitle("MSTRG.3734 Wilcoxon rank-sum test") + 
   scale_color_manual(values = c("CTR"="purple","HIGH"="yellow3"))
+###########################
+######### Volcano
+###########################
+volcano <- TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out_n2,
+                                     collapsed_color = "red",
+                                     expansion_color = "green")
+
+png("volcano.png", width=6, height=6, units = "in", res = 300)
+volcano
+dev.off()
+###########################
+######### Ma plot
+###########################
+ma_plot <- TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out_n2,
+                                    collapsed_color = "red",
+                                    expansion_color = "green")
+
+png("ma_plot.png", width=6, height=6, units = "in", res = 300)
+table(ma_plot$data$PolyA_tail_length)
+dev.off()
 ############################
 ########## graph merge
 ############################
@@ -303,26 +323,6 @@ png(("vol_ma.png"), width=8, height=6, units = "in", res = 300)
 combined_plot_ma_vol
 dev.off()
 
-###########################
-######### Volcano
-###########################
-volcano <- TAILcaller::volcano_polyA(calculate_statistics_out = calculate_statistics_out_n2,
-                                     collapsed_color = "red",
-                                     expansion_color = "green")
-
-png("volcano.png", width=6, height=6, units = "in", res = 300)
-volcano
-dev.off()
-###########################
-######### Ma plot
-###########################
-ma_plot <- TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statistics_out_n2,
-                                    collapsed_color = "red",
-                                    expansion_color = "green")
-
-png("ma_plot.png", width=6, height=6, units = "in", res = 300)
-table(ma_plot$data$PolyA_tail_length)
-dev.off()
 ################################################################################
 ################################ direct RNA ####################################
 ################################################################################
