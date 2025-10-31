@@ -23,13 +23,56 @@ The command to perform basecalling for TAILcaller to work correctly.
 
 # Installation
 
+To use all features of the program, you will need several libraries.
+
+Install missing CRAN packages
+
+```r
+install.packages(setdiff(c("dplyr", "stats", "tidyr", "rlang", 
+                           "ggplot2", "circlize", "car", 
+                           "dunn.test", "nortest", "rstatix"), 
+                         installed.packages()[,"Package"]))
+```
+
+Load CRAN packages
+
+```r
+lapply(c("dplyr", "stats", "tidyr", "rlang", 
+         "ggplot2", "circlize", "car", 
+         "dunn.test", "nortest", "rstatix"), 
+       library, character.only = TRUE)
+```
+
+Install BiocManager if not installed
+
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE)) 
+  install.packages("BiocManager")
+```
+
+Install missing Bioconductor packages
+
+```r
+
+BiocManager::install(setdiff(c("Rsamtools", "ComplexHeatmap", "ggtree"), 
+                             installed.packages()[,"Package"]))
+```
+
+Load Bioconductor packages
+
+```r
+lapply(c("Rsamtools", "ComplexHeatmap", "ggtree"), 
+       library, character.only = TRUE)
+```
+
+Install TAILcaller
+
 ```r
 install.packages("devtools")
 library(devtools)
 devtools::install_github('Mordziarz/TAILcaller')
 library(TAILcaller)
 ```
-To use all features of the program, you will need several libraries.
 
 ```r
 library(Rsamtools)
