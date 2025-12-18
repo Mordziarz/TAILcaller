@@ -118,7 +118,7 @@ samples_table <- data.frame(bam_path = c(bamfile1,bamfile2,bamfile3,bamfile4,bam
 get_polyA_out <- TAILcaller::get_polyA(samples_table = samples_table)
 
 ```
-WARNING: For reads where tail length estimation failed, the output will be -1 (default failure) or 0 (if the primer anchor was detected but the tail length could not be determined).
+WARNING: For reads where tail length estimation failed, the output will be -1 or 0.
 
 I recommend running this command before proceeding with further analysis:
 
