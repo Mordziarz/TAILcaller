@@ -98,7 +98,7 @@ set.seed(123)
 
 # Input data and get_polyA() function
 
-The get_polyA() function is the main function of the package, which extracts polyA tail information from a BAM file.
+The get_polyA() function is the main function of the package, which extracts polyA tail information from a BAM file. 
 
 ```r
 bamfile1 <- "path/to/bam"
@@ -117,6 +117,13 @@ samples_table <- data.frame(bam_path = c(bamfile1,bamfile2,bamfile3,bamfile4,bam
 
 get_polyA_out <- TAILcaller::get_polyA(samples_table = samples_table)
 
+```
+WARNING: For reads where tail length estimation failed, the output will be -1 (default failure) or 0 (if the primer anchor was detected but the tail length could not be determined).
+
+I recommend running this command before proceeding with further analysis:
+
+```r
+get_polyA_out <- get_polyA_out[get_polyA_out$polyA_length > 0,]
 ```
 
 # Density plot 
