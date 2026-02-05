@@ -22,7 +22,7 @@ library(rstatix)
 
 set.seed(123) 
 
-setwd("/dane/TAILcaller/")
+setwd("path/to/your/workdir")
 
 ################################################################################
 ################################ cDNA n>2 ######################################
@@ -296,7 +296,7 @@ ma_plot <- TAILcaller::maplot_polyA(calculate_statistics_out = calculate_statist
                                     expansion_color = "green")
 
 png("ma_plot.png", width=6, height=6, units = "in", res = 300)
-table(ma_plot$data$PolyA_tail_length)
+ma_plot
 dev.off()
 ############################
 ########## graph merge
