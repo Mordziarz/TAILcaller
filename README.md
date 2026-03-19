@@ -30,7 +30,7 @@ Install missing CRAN packages
 ```r
 install.packages(setdiff(c("dplyr", "stats", "tidyr", "rlang", 
                            "ggplot2", "circlize", "car", 
-                           "dunn.test", "nortest", "rstatix"), 
+                           "dunn.test", "nortest", "rstatix","data.table), 
                          installed.packages()[,"Package"]))
 ```
 
@@ -39,7 +39,7 @@ Load CRAN packages
 ```r
 lapply(c("dplyr", "stats", "tidyr", "rlang", 
          "ggplot2", "circlize", "car", 
-         "dunn.test", "nortest", "rstatix"), 
+         "dunn.test", "nortest", "rstatix","data.table), 
        library, character.only = TRUE)
 ```
 
@@ -88,6 +88,7 @@ library(car)
 library(dunn.test)
 library(nortest)
 library(rstatix)
+library(data.table)
 ```
 
 # set.seed() for reproducible results

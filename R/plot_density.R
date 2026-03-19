@@ -25,195 +25,90 @@
 #'
 #' @importFrom ggplot2 ggplot aes geom_density stat_density geom_vline labs theme_bw coord_cartesian
 #' @importFrom rlang sym
-#' @importFrom dplyr group_by summarise n_distinct n
 #' @importFrom stats quantile median mean t.test wilcox.test aov TukeyHSD kruskal.test oneway.test
 #' @importFrom nortest lillie.test
 #' @importFrom car leveneTest
 #' @importFrom dunn.test dunn.test
 #' @importFrom rstatix games_howell_test
+#' @import data.table
 
-plot_density <- function(polyA_table=get_gene_id_out,stats="median",grouping_factor="group") {
+plot_density <- function(polyA_table = get_gene_id_out, stats = "median", grouping_factor = "group") {
   
+  if (missing(polyA_table)) stop("'polyA_table' must be defined.")
   
-  if (missing(polyA_table)) {
-    stop("'polyA_table' must be defined.")
-  }
-
-  if (missing(stats)) {
-    stop("'stats' must be defined. median or mean")
-  }
+  dt <- as.data.table(polyA_table)
+  dt[, (grouping_factor) := as.factor(get(grouping_factor))]
   
-  if(!all(c("polyA_length", "group", "sample_name") %in% colnames(polyA_table))) {
-    stop("The polyA_table must contain the columns 'polyA_length', 'group' and 'sample_name'.")
+  if(!all(c("polyA_length", grouping_factor, "sample_name") %in% colnames(dt))) {
+    stop(paste("The polyA_table must contain the columns 'polyA_length',", grouping_factor, "and 'sample_name'."))
   }
   
-max_density <- stats::quantile(polyA_table$polyA_length, probs = c(0.99))[1]
-
-density_plot <- ggplot2::ggplot(polyA_table, ggplot2::aes(x = polyA_length, y=..ndensity.., color = !!rlang::sym(grouping_factor))) +
-                ggplot2::geom_density() +
-                ggplot2::stat_density(geom = "line", position = "identity", size = 1) +
-                ggplot2::labs(title = "Density plot of polyA lengths", x = "PolyA length", y = "Density (normalized)") +
-                ggplot2::theme_bw() + 
-                ggplot2::coord_cartesian(xlim = c(0, max_density))
-
-if (stats=="median") {
+  max_density <- quantile(dt$polyA_length, probs = 0.99, na.rm = TRUE)[[1]]
+  ref_stats <- dt[, .(stat_val = if(stats == "median") as.numeric(median(polyA_length)) else mean(polyA_length)), 
+                  by = grouping_factor]
   
-  medians <- polyA_table %>%
-    dplyr::group_by(!!rlang::sym(grouping_factor)) %>%
-    dplyr::summarise(median_polyA_length = stats::median(polyA_length))
+  density_plot <- ggplot(dt, aes(x = polyA_length, y = after_stat(ndensity), color = .data[[grouping_factor]])) +
+    geom_density(linewidth = 1) +
+    geom_vline(data = ref_stats, aes(xintercept = stat_val, color = .data[[grouping_factor]]), 
+               linetype = "dashed", linewidth = 1) +
+    labs(title = "Density plot of polyA lengths", 
+         x = "PolyA length", 
+         y = "Density (normalized)",
+         color = "Group") +
+    theme_bw() + 
+    coord_cartesian(xlim = c(0, max_density)) +
+    guides(color = guide_legend(override.aes = list(linetype = "solid", linewidth = 1))) +
+    theme(legend.key = element_blank())
   
-  density_plot <- density_plot + ggplot2::geom_vline(data = medians, ggplot2::aes(xintercept = median_polyA_length, color = !!rlang::sym(grouping_factor)), 
-                                            linetype = "dashed", size = 1)
-}
-
-if (stats=="mean") {
-
-means <- polyA_table %>%
-  dplyr::group_by(!!rlang::sym(grouping_factor)) %>%
-  dplyr::summarise(mean_polyA_length = base::mean(polyA_length))
-
-density_plot <- density_plot + ggplot2::geom_vline(data = means, ggplot2::aes(xintercept = mean_polyA_length, color = !!rlang::sym(grouping_factor)), 
-           linetype = "dashed", size = 1)
-
-}
-
-  ngroups <- dplyr::n_distinct(polyA_table[[grouping_factor]])
-
-  group_counts <- polyA_table %>%
-    dplyr::group_by(!!rlang::sym(grouping_factor)) %>%
-    dplyr::summarise(count = dplyr::n(), .groups = 'drop')
-
-  force_non_parametric <- any(group_counts$count < 3)
-
+  group_info <- dt[, .(n = .N), by = grouping_factor]
+  ngroups <- nrow(group_info)
+  force_non_parametric <- any(group_info$n < 3)
+  
   normality <- NULL
   levene_res <- NULL
   group_test <- NULL
-  all_normal <- FALSE
-  homogeneous_variances <- FALSE
-
-
-  if (ngroups < 2) {
-  group_test <- "Only one group; no comparison performed."
-} else {
-  if (!force_non_parametric) {
-    normality <- polyA_table %>%
-      dplyr::group_by(!!rlang::sym(grouping_factor)) %>%
-      dplyr::summarise(
-        n = dplyr::n(),
-        p_value = (function() {
-          current_group_name <- as.character(dplyr::cur_group()[[1]])
-          data_vector <- polyA_length
-
-          if (dplyr::n() < 3) {
-            warning(paste0("Not enough observations (n=", dplyr::n(), ") in group '", current_group_name, "' for normality test. Assuming non-normal."))
-            return(0)
-          }
-          if (length(unique(data_vector)) == 1) {
-            warning(paste0("All 'polyA_length' values are identical in group '", current_group_name, "'. Normality test cannot be performed. Assuming non-normal."))
-            return(0) 
-          }
-
-          tryCatch({
-            if (dplyr::n() <= 5000) {
-              stats::shapiro.test(data_vector)$p.value
-            } else {
-              if (!requireNamespace("nortest", quietly = TRUE)) {
-                stop("Package 'nortest' is required for Lilliefor's test when n > 5000. Please install it.")
-              }
-              nortest::lillie.test(data_vector)$p.value
-            }
-          }, error = function(e) {
-            warning(paste0("Error in normality test for group '", current_group_name, "' (n=", dplyr::n(), "): ", e$message, ". Assuming non-normal."))
-            return(0) 
-          })
-        })(), 
-        .groups = 'drop'
-      )
-    all_normal <- all(normality$p_value > 0.05, na.rm = TRUE)
-
-    if (all(group_counts$count >= 2)) {
-      levene_res <- tryCatch(
-        {
-          car::leveneTest(
-            as.formula(paste0("polyA_length ~ ", grouping_factor)),
-            data = polyA_table,
-            center = median
-          )
-        },
-        error = function(e) {
-          warning(paste0("Levene's test failed: ", e$message, ". Homogeneity of variance cannot be assessed."))
-          NULL
-        }
-      )
+  
+  if (ngroups >= 2) {
+    if (!force_non_parametric) {
+      normality <- dt[, {
+        val <- polyA_length
+        p_val <- tryCatch({
+          if (.N <= 5000) stats::shapiro.test(val)$p.value
+          else nortest::lillie.test(val)$p.value
+        }, error = function(e) 0)
+        .(n = .N, p_value = p_val)
+      }, by = grouping_factor]
+      
+      all_normal <- all(normality$p_value > 0.05, na.rm = TRUE)
+      form <- as.formula(paste0("polyA_length ~ ", grouping_factor))
+      levene_res <- tryCatch(car::leveneTest(form, data = dt, center = median), error = function(e) NULL)
       homogeneous_variances <- !is.null(levene_res) && levene_res[["Pr(>F)"]][1] > 0.05
-    } else {
-      warning("Not enough observations in some groups to perform Levene's test for homogeneity of variance. Assuming unequal variances for parametric tests if normality holds, or forcing non-parametric test if group sizes are too small (<3).")
-      homogeneous_variances <- FALSE
     }
-  }
-
-
+    
     if (ngroups == 2) {
       if (force_non_parametric || !all_normal) {
-        group_test <- stats::wilcox.test(
-          as.formula(paste0("polyA_length ~ ", grouping_factor)),
-          data = polyA_table
-        )
-      } else if (all_normal && homogeneous_variances) {
-        group_test <- stats::t.test(
-          as.formula(paste0("polyA_length ~ ", grouping_factor)),
-          data = polyA_table,
-          var.equal = TRUE
-        )
-      } else if (all_normal && !homogeneous_variances) {
-        group_test <- stats::t.test(
-          as.formula(paste0("polyA_length ~ ", grouping_factor)),
-          data = polyA_table,
-          var.equal = FALSE
-        )
+        group_test <- stats::wilcox.test(form, data = dt)
+      } else {
+        group_test <- stats::t.test(form, data = dt, var.equal = homogeneous_variances)
       }
     } else {
       if (force_non_parametric || !all_normal) {
-        kruskal_res <- stats::kruskal.test(
-          as.formula(paste0("polyA_length ~ ", grouping_factor)),
-          data = polyA_table
-        )
-        dunn_res <- dunn.test::dunn.test(
-          x = polyA_table$polyA_length,
-          g = polyA_table[[grouping_factor]],
-          method = "bonferroni",
-          altp = TRUE
-        )
+        kruskal_res <- stats::kruskal.test(form, data = dt)
+        dunn_res <- dunn.test::dunn.test(x = dt$polyA_length, g = dt[[grouping_factor]], method = "bonferroni", altp = TRUE)
         group_test <- list(kruskal = kruskal_res, dunn = dunn_res)
-      } else if (all_normal && homogeneous_variances) {
-        aov_res <- stats::aov(
-          as.formula(paste0("polyA_length ~ ", grouping_factor)),
-          data = polyA_table
+      } else if (homogeneous_variances) {
+        aov_res <- stats::aov(form, data = dt)
+        group_test <- list(anova_summary = summary(aov_res), tukey_hsd = stats::TukeyHSD(aov_res))
+      } else {
+        group_test <- list(
+          welch_anova = stats::oneway.test(form, data = dt, var.equal = FALSE),
+          games_howell = rstatix::games_howell_test(data = dt, formula = form)
         )
-        anova_sum <- summary(aov_res)
-        tukey_res <- stats::TukeyHSD(aov_res)
-        group_test <- list(anova_summary = anova_sum, tukey_hsd = tukey_res)
-      } else if (all_normal && !homogeneous_variances) {
-        welch_res <- stats::oneway.test(
-          as.formula(paste0("polyA_length ~ ", grouping_factor)),
-          data = polyA_table,
-          var.equal = FALSE
-        )
-        games_howell_res <- rstatix::games_howell_test(
-          data = polyA_table,
-          formula = as.formula(paste0("polyA_length ~ ", grouping_factor)),
-          conf.level = 0.95,
-          detailed = FALSE
-        )
-        group_test <- list(welch_anova = welch_res, games_howell = games_howell_res)
       }
     }
+  } else {
+    group_test <- "Only one group; no comparison performed."
   }
-
-  return(list(
-    plot = density_plot,
-    normality = normality,
-    variance = levene_res,
-    test = group_test
-  ))
+  
+  return(list(plot = density_plot, normality = as.data.frame(normality), variance = levene_res, test = group_test))
 }

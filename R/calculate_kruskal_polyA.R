@@ -19,48 +19,45 @@
 #' @author Mateusz Mazdziarz
 #'
 #' @importFrom stats kruskal.test p.adjust
+#' @import data.table
 
-calculate_kruskal_polyA <- function(polyA_table=get_gene_id_out, grouping_factor="group", which_level="gene_id",padj_method="fdr") {
+calculate_kruskal_polyA <- function(polyA_table = get_gene_id_out, 
+                                         grouping_factor = "group", 
+                                         which_level = "gene_id", 
+                                         padj_method = "fdr") {
   
-  if (missing(polyA_table)) {
-    stop("'polyA_table' must be defined.")
-  }
+  if (missing(polyA_table)) stop("'polyA_table' must be defined.")
   
-  base::message("Starting to process the data and calculate statistics...")
+  message("Starting to process the data...")
+  start_time <- Sys.time()
   
-  start_time <- base::Sys.time()
+  dt <- as.data.table(polyA_table)
   
-  how_molecules <- polyA_table[!duplicated(polyA_table[[which_level]]), ]
-  how_molecules <- how_molecules[, which_level, drop=FALSE]
+  setnames(dt, c(grouping_factor, which_level), c("grp_tmp", "unit_tmp"))
   
-  p_values <- base::numeric(base::nrow(how_molecules))
-  
-  formula <- base::paste0("polyA_length ~ ", grouping_factor)
-  
-  for (i in 1:base::nrow(how_molecules)) {
+  results <- dt[, {
+    unique_grps <- uniqueN(grp_tmp)
     
-    which_molecule <- how_molecules[[which_level]][i]
+    p_val <- NA_real_
     
-    polyA_table_unique <- polyA_table[polyA_table[[which_level]] == which_molecule, ]
-    
-    if (base::nrow(base::unique(polyA_table_unique[grouping_factor])) > 2) {
-      
-      p_val <- base::suppressWarnings(stats::kruskal.test(stats::as.formula(formula), data = polyA_table_unique)$p.value)
-      p_values[i] <- p_val
-      
-      
-    } else {
-      p_values[i] <- NA
+    if (unique_grps > 2) {
+      p_val <- suppressWarnings(
+        stats::kruskal.test(polyA_length ~ grp_tmp, data = .SD)$p.value
+      )
     }
-  }
+    
+    list(p_value = p_val)
+    
+  }, by = unit_tmp]
   
-  how_molecules$p_value <- p_values
-  how_molecules$padj <- stats::p.adjust(how_molecules$p_value, method = padj_method)
+  setnames(results, "unit_tmp", which_level)
+  results[, padj := stats::p.adjust(p_value, method = padj_method)]
   
-  end_time <- base::Sys.time()
+  setnames(dt, c("grp_tmp", "unit_tmp"), c(grouping_factor, which_level))
   
-  base::message("Processing complete. Time taken: ", base::round(difftime(end_time, start_time, units = "mins"), 2), " minutes")
-  base::message("Statistics have been calculated successfully.")
+  end_time <- Sys.time()
+  message(sprintf("Processing complete. Time taken: %.2f seconds.", 
+                  as.numeric(difftime(end_time, start_time, units = "secs"))))
   
-  return(how_molecules)
+  return(as.data.frame(results))
 }

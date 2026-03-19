@@ -30,176 +30,97 @@
 #' @importFrom car leveneTest
 #' @importFrom dplyr %>% distinct
 #' @importFrom rlang sym
+#' @import data.table
 
-calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, grouping_factor = "group", which_level = "gene_id", control_group = NULL, treated_group = NULL, padj_method = "fdr") {
+calculate_statistics_n2 <- function(polyA_table = get_gene_id_out, 
+                                         grouping_factor = "group", 
+                                         which_level = "gene_id", 
+                                         control_group = NULL, 
+                                         treated_group = NULL, 
+                                         padj_method = "fdr") {
+  
   if (missing(polyA_table)) stop("'polyA_table' must be defined.")
   if (is.null(control_group) | is.null(treated_group)) {
     stop("Both 'control_group' and 'treated_group' must be provided.")
   }
-
+  
   message("Starting processing...")
   start_time <- Sys.time()
-
-  if (!all(c("polyA_length", grouping_factor, which_level) %in% colnames(polyA_table))) {
-    stop(paste0("The 'polyA_table' must contain 'polyA_length', '", grouping_factor, "', and '", which_level, "' columns."))
-  }
-
-  polyA_table_filtered <- polyA_table[polyA_table[[grouping_factor]] %in% c(control_group, treated_group), ]
-
-  how_molecules <- polyA_table_filtered %>%
-    dplyr::distinct(!!rlang::sym(which_level)) %>%
-    as.data.frame()
-
-  results <- lapply(1:nrow(how_molecules), function(i) {
-    molecule <- how_molecules[[which_level]][i]
-    subset_data <- polyA_table_filtered[polyA_table_filtered[[which_level]] == molecule, ]
-
-    ctr_data <- subset_data$polyA_length[subset_data[[grouping_factor]] == control_group]
-    trt_data <- subset_data$polyA_length[subset_data[[grouping_factor]] == treated_group]
-
-    n_ctr <- length(ctr_data)
-    n_trt <- length(trt_data)
-
-    test_name <- NA
-
-    if (n_ctr < 2 || n_trt < 2) {
-      return(list(
-        p_value = NA,
-        mean_ctr = NA,
-        mean_trt = NA,
-        fold_change = NA,
-        cohen_d = NA,
-        cohen_effect = NA,
-        diff_length = NA,
-        test_performed = "Insufficient data (<2 observations per group)"
-      ))
-    }
-
-    shapiro_or_lillie <- function(x, group_name = "") {
-      if (length(x) < 3) {
-        warning(paste0("Not enough observations (n=", length(x), ") in group '", group_name, "' for normality test. Normality cannot be assessed."))
-        return(NA)
-      }
-      if (length(unique(x)) == 1) {
-        warning(paste0("All 'polyA_length' values are identical in group '", group_name, "'. Normality test cannot be performed. Normality cannot be assessed."))
-        return(NA)
-      }
-
-      tryCatch({
-        if (length(x) <= 5000) {
-          stats::shapiro.test(x)$p.value
-        } else {
-          if (!requireNamespace("nortest", quietly = TRUE)) {
-            stop("Package 'nortest' is required for Lilliefor's test when n > 5000. Please install it.")
-          }
-          nortest::lillie.test(x)$p.value
-        }
-      }, error = function(e) {
-        warning(paste0("Error in normality test for group '", group_name, "' (n=", length(x), "): ", e$message, ". Normality cannot be assessed."))
-        return(NA)
-      })
-    }
-
-
-    normality_ctr_p <- shapiro_or_lillie(ctr_data)
-    normality_trt_p <- shapiro_or_lillie(trt_data)
-
-    all_normal <- !is.na(normality_ctr_p) && normality_ctr_p > 0.05 &&
-                  !is.na(normality_trt_p) && normality_trt_p > 0.05
-
-
-    levene_p <- NA
-    if (n_ctr >= 2 && n_trt >= 2) {
-      temp_data <- data.frame(
-        polyA_length = c(ctr_data, trt_data),
-        group = factor(c(rep(control_group, n_ctr), rep(treated_group, n_trt)))
-      )
-      levene_res <- tryCatch(
-        {
-
-          car::leveneTest(as.formula(paste0("polyA_length ~ ", grouping_factor)), data = temp_data, center = median)
-        },
-        error = function(e) {
-          warning(paste0("Levene's test failed for molecule '", molecule, "': ", e$message))
-          NULL
-        }
-      )
-      if (!is.null(levene_res)) {
-        levene_p <- levene_res[["Pr(>F)"]][1]
-      }
-    }
-    homogeneous_variances <- !is.na(levene_p) && levene_p > 0.05
-
-p_val <- NA
-    if (all_normal && homogeneous_variances) {
-      p_val <- suppressWarnings(
-        stats::t.test(ctr_data, trt_data, var.equal = TRUE)$p.value
-      )
-      test_name <- "Student's t-test"
-    } else if (all_normal && !homogeneous_variances) {
-      p_val <- suppressWarnings(
-        stats::t.test(ctr_data, trt_data, var.equal = FALSE)$p.value
-      )
-      test_name <- "Welch's t-test"
-    } else {
-      p_val <- suppressWarnings(
-        stats::wilcox.test(ctr_data, trt_data)$p.value
-      )
-      test_name <- "Wilcoxon rank-sum test"
-    }
-
-    mean_ctr <- mean(ctr_data, na.rm = TRUE)
-    mean_trt <- mean(trt_data, na.rm = TRUE)
-
-    fc <- ifelse(mean_ctr == 0, NA, mean_trt / mean_ctr)
-
-    sd_ctr <- sd(ctr_data, na.rm = TRUE)
-    sd_trt <- sd(trt_data, na.rm = TRUE)
-
-    pooled_sd <- NA
-    if (n_ctr >= 2 && n_trt >= 2) {
-      pooled_sd <- sqrt(((n_ctr - 1) * sd_ctr^2 + (n_trt - 1) * sd_trt^2) / (n_ctr + n_trt - 2))
-    }
-
-    cd <- NA
-    if (!is.na(pooled_sd) && pooled_sd > 0) {
-      cd <- abs((mean_trt - mean_ctr) / pooled_sd)
-    }
-
-    list(
-      p_value = p_val,
-      mean_ctr = mean_ctr,
-      mean_trt = mean_trt,
-      fold_change = fc,
-      cohen_d = cd,
-      cohen_effect = ifelse(is.na(cd), NA,
-                            ifelse(cd < 0.2, "small",
-                                   ifelse(cd < 0.5, "medium", "large"))),
-      diff_length = mean_trt - mean_ctr,
-      test_performed = test_name
+  
+  dt <- as.data.table(polyA_table)
+  dt_filtered <- dt[get(grouping_factor) %in% c(control_group, treated_group)]
+  
+  setnames(dt_filtered, c(grouping_factor, which_level), c("grp_tmp", "unit_tmp"))
+  dt_filtered[, grp_tmp := factor(grp_tmp, levels = c(control_group, treated_group))]
+  
+  results <- dt_filtered[, {
+    ctr_vals <- polyA_length[grp_tmp == control_group]
+    trt_vals <- polyA_length[grp_tmp == treated_group]
+    
+    n_ctr <- length(ctr_vals)
+    n_trt <- length(trt_vals)
+    
+    res <- list(
+      p_value = NA_real_, mean_group_ctr = NA_real_, mean_group_trt = NA_real_,
+      diff_length = NA_real_, fold_change = NA_real_, cohen_d = NA_real_,
+      cohen_effect = NA_character_, test_performed = "Insufficient data"
     )
-  })
-
-
-  how_molecules$p_value <- sapply(results, `[[`, "p_value")
-  how_molecules$mean_group_ctr <- sapply(results, `[[`, "mean_ctr")
-  how_molecules$mean_group_trt <- sapply(results, `[[`, "mean_trt")
-  how_molecules$diff_length <- sapply(results, `[[`, "diff_length")
-  how_molecules$fold_change <- sapply(results, `[[`, "fold_change")
-  how_molecules$cohen_d <- sapply(results, `[[`, "cohen_d")
-  how_molecules$cohen_effect <- sapply(results, `[[`, "cohen_effect")
-  how_molecules$test_performed <- sapply(results, `[[`, "test_performed")
-
-  valid_p_values_idx <- !is.na(how_molecules$p_value)
-  how_molecules$padj <- NA
-  how_molecules$padj[valid_p_values_idx] <- p.adjust(how_molecules$p_value[valid_p_values_idx], method = padj_method)
-
-  how_molecules$Log2FC <- log2(how_molecules$fold_change)
-
-  message("Processing completed. Time: ",
-    round(difftime(Sys.time(), start_time, units = "mins"), 1),
-    " minutes"
-  )
-
-  return(how_molecules)
+    
+    if (n_ctr >= 2 && n_trt >= 2) {
+      m_ctr <- mean(ctr_vals)
+      m_trt <- mean(trt_vals)
+      v_ctr <- var(ctr_vals)
+      v_trt <- var(trt_vals)
+      
+      res$mean_group_ctr <- m_ctr
+      res$mean_group_trt <- m_trt
+      res$diff_length    <- m_trt - m_ctr
+      res$fold_change    <- if(m_ctr != 0) m_trt / m_ctr else NA_real_
+      
+      shapiro_p <- function(x) {
+        if(length(x) < 3) return(0)
+        if(uniqueN(x) == 1) return(0)
+        if(length(x) <= 5000) shapiro.test(x)$p.value else nortest::lillie.test(x)$p.value
+      }
+      
+      norm_ctr <- shapiro_p(ctr_vals)
+      norm_trt <- shapiro_p(trt_vals)
+      all_normal <- (norm_ctr > 0.05) && (norm_trt > 0.05)
+      
+      lev_p <- tryCatch({
+        tmp_val <- c(ctr_vals, trt_vals)
+        tmp_grp <- factor(c(rep("C", n_ctr), rep("T", n_trt)))
+        car::leveneTest(tmp_val ~ tmp_grp, center = median)[["Pr(>F)"]][1]
+      }, error = function(e) NA_real_)
+      
+      homo_var <- !is.na(lev_p) && lev_p > 0.05
+      
+      if (all_normal) {
+        t_res <- t.test(ctr_vals, trt_vals, var.equal = homo_var)
+        res$p_value <- t_res$p.value
+        res$test_performed <- if(homo_var) "Student's t-test" else "Welch's t-test"
+      } else {
+        res$p_value <- wilcox.test(ctr_vals, trt_vals)$p.value
+        res$test_performed <- "Wilcoxon rank-sum test"
+      }
+      
+      pooled_sd <- sqrt(((n_ctr - 1) * v_ctr + (n_trt - 1) * v_trt) / (n_ctr + n_trt - 2))
+      if (!is.na(pooled_sd) && pooled_sd > 0) {
+        d <- abs(res$diff_length / pooled_sd)
+        res$cohen_d <- d
+        res$cohen_effect <- if(d < 0.2) "small" else if(d < 0.5) "medium" else "large"
+      }
+    }
+    
+    res
+  }, by = unit_tmp]
+  
+  setnames(results, "unit_tmp", which_level)
+  results[, padj := p.adjust(p_value, method = padj_method)]
+  results[, Log2FC := log2(fold_change)]
+  
+  message(sprintf("Processing completed in %.2f seconds.", 
+                  as.numeric(difftime(Sys.time(), start_time, units = "secs"))))
+  
+  return(as.data.frame(results))
 }

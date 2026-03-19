@@ -18,73 +18,57 @@
 #'
 #' @author Mateusz Mazdziarz
 #'
-#' @importFrom dplyr group_by summarise n arrange filter mutate select
-#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_bw theme element_text
+#' @import data.table
+#' @import ggplot2
 
-polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE,gene_column_gtf="gene_id") {
+polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE, gene_column_gtf = "gene_id") {
   
-  if (missing(polyA_table)) {
-    stop("'polyA_table' must be defined.")
+  if (missing(polyA_table)) stop("'polyA_table' must be defined.")
+  
+  dt <- as.data.table(polyA_table)
+  
+  if (!(gene_column_gtf %in% colnames(dt))) {
+    stop(paste("Column", gene_column_gtf, "not found!"))
   }
+  
+  message("Starting fast processing for polyA duplicates...")
+  
 
-      if (!base::is.character(gene_column_gtf) || !(gene_column_gtf %in% colnames(polyA_table))) {
-    stop(paste("Argument 'gene_column_gtf' must be a column name in the gtf data frame. Please check if the column", gene_column_gtf, "exists."))
-  }
-
-  
-  message("Starting processing for polyA duplicates...")
-  
-  summary_read_id <- polyA_table %>% 
-    dplyr::group_by(read_id) %>% 
-    dplyr::summarise(count = n(), .groups = 'drop') %>%
-    dplyr::arrange(desc(count))
-  
-  duplicated_reads_summary <- summary_read_id %>%
-    dplyr::filter(count > 1)
+  summary_read_id <- dt[, .(count = .N), by = read_id][order(-count)]
+  duplicated_reads_summary <- summary_read_id[count > 1]
   
   message(paste0("Found ", nrow(duplicated_reads_summary), " read_ids with duplicates."))
   
-  read_categories <- summary_read_id %>%
-    dplyr::mutate(category = ifelse(count == 1, "Unique Single", "Duplicated or Multiple")) %>%
-    dplyr::group_by(category) %>%
-    dplyr::summarise(num_reads = n(), .groups = 'drop') %>%
-    dplyr::mutate(percentage = num_reads / sum(num_reads) * 100)
+  read_categories <- summary_read_id[, .(
+    num_reads = .N
+  ), by = .(category = ifelse(count == 1, "Unique Single", "Duplicated or Multiple"))]
+  
+  read_categories[, percentage := num_reads / sum(num_reads) * 100]
   
   plot_categories <- ggplot(read_categories, aes(x = category, y = num_reads, fill = category)) +
     geom_bar(stat = "identity") +
     geom_text(aes(label = paste0(num_reads, " (", round(percentage, 1), "%)")),
-              vjust = -0.5, color = "black") +
+              vjust = -0.5) +
     labs(x = "Read category", y = "Number of reads") +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1),legend.position = "none")
+    theme_bw() + theme(legend.position = "none")
   
-  
-  output_table <- polyA_table
-  
-  output_table$gene_id2 <- output_table[[gene_column_gtf]] 
-
-  if (delete_duplicates == TRUE) {
-    message("Deleting duplicates based on combined index...")
-    output_table$index <- paste0(output_table$read_id, "_",
-                                 output_table$gene_id2, "_",
-                                 output_table$polyA_length, "_",
-                                 output_table$sample_name, "_",
-                                 output_table$group)
+  if (delete_duplicates) {
+    message("Deleting duplicates using internal indexing...")
+    rows_before <- nrow(dt)
     
-    rows_before_deduplication <- nrow(output_table)
-    output_table <- output_table[!duplicated(output_table$index),]
-    rows_after_deduplication <- nrow(output_table)
+    cols_to_check <- c("read_id", gene_column_gtf, "polyA_length", "sample_name", "group")
     
-    message(paste0("Removed ", rows_before_deduplication - rows_after_deduplication, " duplicate rows."))
+    dt <- unique(dt, by = cols_to_check)
     
-    output_table <- dplyr::select(output_table, -index, -gene_id2)
+    rows_after <- nrow(dt)
+    message(paste0("Removed ", rows_before - rows_after, " duplicate rows."))
   }
   
   return(list(
-    processed_table = output_table,
-    read_id_counts = summary_read_id, 
-    duplicated_read_ids = duplicated_reads_summary,
-    read_categories_summary = read_categories,
+    processed_table = as.data.frame(dt),
+    read_id_counts = as.data.frame(summary_read_id), 
+    duplicated_read_ids = as.data.frame(duplicated_reads_summary),
+    read_categories_summary = as.data.frame(read_categories),
     categories_plot = plot_categories
   ))
 }
