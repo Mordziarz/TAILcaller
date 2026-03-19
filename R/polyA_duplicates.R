@@ -31,7 +31,7 @@ polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE, gene_column_
     stop(paste("Column", gene_column_gtf, "not found!"))
   }
   
-  message("Starting fast processing for polyA duplicates...")
+  message("Starting processing for polyA duplicates...")
   
 
   summary_read_id <- dt[, .(count = .N), by = read_id][order(-count)]
