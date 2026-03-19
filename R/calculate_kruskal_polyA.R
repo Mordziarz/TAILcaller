@@ -32,7 +32,7 @@ calculate_kruskal_polyA <- function(polyA_table = get_gene_id_out,
   start_time <- Sys.time()
   
   dt <- as.data.table(polyA_table)
-  
+  `.` <- list
   setnames(dt, c(grouping_factor, which_level), c("grp_tmp", "unit_tmp"))
   
   results <- dt[, {

@@ -36,6 +36,8 @@ calculate_polyA_stat_n3 <- function(polyA_table = get_gene_id_out, grouping_fact
   
   dt <- as.data.table(polyA_table)
   
+  `.` <- list
+
   setnames(dt, c(grouping_factor, which_level), c("group_tmp", "unit_tmp"))
   dt[, group_tmp := as.factor(group_tmp)]
   

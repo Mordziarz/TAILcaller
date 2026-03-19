@@ -37,6 +37,7 @@ plot_density <- function(polyA_table = get_gene_id_out, stats = "median", groupi
   if (missing(polyA_table)) stop("'polyA_table' must be defined.")
   
   dt <- as.data.table(polyA_table)
+  `.` <- list
   dt[, (grouping_factor) := as.factor(get(grouping_factor))]
   
   if(!all(c("polyA_length", grouping_factor, "sample_name") %in% colnames(dt))) {

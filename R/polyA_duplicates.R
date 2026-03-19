@@ -27,6 +27,8 @@ polyA_duplicates <- function(polyA_table, delete_duplicates = TRUE, gene_column_
   
   dt <- as.data.table(polyA_table)
   
+  `.` <- list
+
   if (!(gene_column_gtf %in% colnames(dt))) {
     stop(paste("Column", gene_column_gtf, "not found!"))
   }
