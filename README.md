@@ -21,6 +21,14 @@ The command to perform basecalling for TAILcaller to work correctly.
 ~/dorado-0.8.1-linux-x64/bin/dorado basecaller sup --reference transcriptome.fasta --estimate-poly-a pod5s/ > CONTROL.bam
 ```
 
+Alternatively, you can perform the BAM alignment as follows:
+
+```r
+~/dorado-0.8.1-linux-x64/bin/dorado basecaller sup --estimate-poly-a pod5s/ > CONTROL.bam
+
+~/dorado-0.8.1-linux-x64/bin/dorado aligner transcriptome.fasta CONTROL.bam > CONTROL_align.bam
+```
+
 # Installation
 
 To use all features of the program, you will need several libraries.
