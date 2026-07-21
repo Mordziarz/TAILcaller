@@ -28,6 +28,20 @@ Alternatively, you can perform the BAM alignment as follows:
 
 ~/dorado-0.8.1-linux-x64/bin/dorado aligner transcriptome.fasta CONTROL.bam > CONTROL_align.bam
 ```
+# Note: Since there are many questions and issues that do not entirely stem from how TAILcaller works:
+
+The FASTA file for the transcriptome must be in the following format:
+```
+>CL1.1
+sequence
+>CL1.2
+sequence
+```
+To build a project-specific transcriptome containing novel transcripts, you can use tools like StringTie (https://github.com/gpertea/stringtie), FLAIR (https://github.com/BrooksLabUCSC/flair), or Bambu (https://github.com/goekelab/bambu) to generate a custom GTF file, and then use gffread (https://github.com/gpertea/gffread) with the reference genome to obtain the final FASTA file:
+
+```bash
+gffread -w transcriptome.fa -g genome.fa annotation_from_stringtie.gtf
+```
 
 # Installation
 
