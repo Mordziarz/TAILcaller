@@ -325,3 +325,6 @@ polyA_heatmap_out$tree
 When utilizing TAILcaller, kindly cite: 
 
 Mateusz Maździarz, Łukasz Paukszto, Jakub Sawicki, TAILcaller: an R package for analyzing differences in poly(A) tail length for Oxford Nanopore RNA sequencing, Bioinformatics Advances, 2025;, vbaf235, https://doi.org/10.1093/bioadv/vbaf235
+
+# Funding / Acknowledgments:
+This work was supported by the National Science Centre (NCN), Poland, under the PRELUDIUM 23 project grant no. 2024/53/N/NZ8/02829, entitled "Are Amphibious Plants More Threatened by Climate Change? - A Comparative Analysis of Epitranscriptomic Adaptation to UV-B Exposure in Terrestrial and Amphibious Riccia Species (Marchantiopsida)".
